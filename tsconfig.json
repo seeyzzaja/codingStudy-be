@@ -2,7 +2,7 @@
   // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
     // File Layout
-    "rootDir": "./src",
+    "rootDir": ".",
     "outDir": "./dist",
 
     // Environment Settings
@@ -10,6 +10,10 @@
     "module": "ESNext",
     "target": "ES2022",
     "moduleResolution": "bundler",
+    "paths": {
+      "#*": ["./src/*"]
+    },
+    "ignoreDeprecations": "6.0",
     // "types": [],
     // For nodejs:
     "lib": ["esnext"],
@@ -23,7 +27,7 @@
 
     // Stricter Typechecking Options
     "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true, // ganti jadi false
+    "exactOptionalPropertyTypes": true,
 
     // Style Options
     // "noImplicitReturns": true,
@@ -34,16 +38,17 @@
     // "noPropertyAccessFromIndexSignature": true,
 
     // Recommended Options
-    "strict": true, // ganti jadi false
+    "strict": true,
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
+    "forceConsistentCasingInFileNames": true,
 
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true
   },
-  "include": ["src"],
-  "exclude": ["node_modules"]
+  "include": ["src", "prisma.config.ts"],
+  "exclude": ["dist", "node_modules"]
 }
