@@ -3,6 +3,7 @@ import type { Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
 import morgan from 'morgan';
 import helmet from 'helmet';
+import userRoute from '#user/route/user.route';
 import cors from 'cors';
 import {
   body,
@@ -318,6 +319,8 @@ app.get('/api/test-async', async (_req: Request, res: Response) => {
 
   return successResponse(res, 'Async berhasil');
 });
+
+app.use('/api/users', userRoute);
 
 // 404 handler
 app.use((req: Request, res: Response) => {

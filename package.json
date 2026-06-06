@@ -19,6 +19,12 @@
   "author": "",
   "license": "ISC",
   "type": "module",
+  "imports": {
+    "#*": {
+      "development": "./src/*.ts",
+      "default": "./dist/src/*.js"
+    }
+  },
   "bugs": {
     "url": "https://github.com/seeyzzaja/codingStudy-be/issues"
   },
