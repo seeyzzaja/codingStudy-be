@@ -17,3 +17,5 @@ log
 Thumbs.db
 /src/generated/prisma
 /generated/prisma
+
+/generated/prisma
