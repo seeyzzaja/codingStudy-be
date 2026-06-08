@@ -11,6 +11,8 @@ import userRouter from "#user/route/user.route";
 import authRouter from "#auth/route/auth.route";
 import { errorHandler } from "#middlewares/error.handler";
 import path from "path";
+import swaggerUi from 'swagger-ui-express';
+import swaggerSpec from './utils/swagger.js';
 
 const app = express();
 const uploadDir = path.resolve(process.cwd(), "public", "uploads");
@@ -29,6 +31,7 @@ app.use(
     crossOriginResourcePolicy: { policy: "cross-origin" },
   })
 );
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(cors());
 app.use(morgan("dev"));
 app.use(express.json());

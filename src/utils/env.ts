@@ -14,7 +14,8 @@ const config = {
   HOST: process.env.HOST || "localhost",
   NODE_ENV: process.env.NODE_ENV || "development",
   BASE_URL: process.env.BASE_URL || `http://localhost:${port}`,
-  ACCESS_SECRET: accessSecret
+  ACCESS_SECRET: accessSecret,
+  API_PREFIX: process.env.API_PREFIX || "/api"
 };
 
 export default config;
