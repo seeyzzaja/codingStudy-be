@@ -3,7 +3,7 @@ import crypto from "crypto";
 import config from "#utils/env";
 
 type AccessTokenPayload = {
-  id: string | number;
+  id: number;
   role?: string;
 };
 
