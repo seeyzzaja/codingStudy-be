@@ -5,7 +5,7 @@ import {
   getAllCourses,
   getCourseById,
   updateCourse,
-} from "#course/controller/course.controller";
+} from "#module/course/controller/course.controller";
 import { authenticate } from "#middlewares/auth.middlewares";
 import {
   createCourseValidation,

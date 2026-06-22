@@ -1,4 +1,4 @@
-import courseService from "#course/service/course.service";
+import courseService from "#module/course/service/course.service";
 import { AppError } from "#utils/app-error";
 import { asyncHandler } from "#utils/async.handler";
 import { successResponse } from "#utils/response";

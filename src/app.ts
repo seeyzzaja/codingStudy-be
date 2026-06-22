@@ -7,12 +7,12 @@ import helmet from "helmet";
 import cors from "cors";
 import morgan from "morgan";
 import { successResponse } from "#utils/response";
-import userRouter from "#user/route/user.route";
-import authRouter from "#auth/route/auth.route";
-import courseRouter from "#course/route/course.route";
+import userRouter from "#module/user/route/user.route";
+import authRouter from "#module/auth/route/auth.route";
+import courseRouter from "#module/course/route/course.route";
 import { errorHandler } from "#middlewares/error.handler";
-import path from "path";
-
+import swaggerUi from 'swagger-ui-express';
+import swaggerSpec from "./utils/swagger.js";
 const app = express();
 
 // app.get("/", (_req, _res) => {
