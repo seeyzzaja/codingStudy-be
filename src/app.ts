@@ -11,7 +11,7 @@ import userRouter from "#user/route/user.route";
 import authRouter from "#auth/route/auth.route";
 import courseRouter from "#course/route/course.route";
 import { errorHandler } from "#middlewares/error.handler";
-
+import path from "path";
 
 const app = express();
 
@@ -24,6 +24,7 @@ app.use(
     crossOriginResourcePolicy: { policy: "cross-origin" },
   })
 );
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(cors());
 app.use(morgan("dev"));
 app.use(express.json());
