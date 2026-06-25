@@ -7,20 +7,13 @@ import helmet from "helmet";
 import cors from "cors";
 import morgan from "morgan";
 import { successResponse } from "#utils/response";
-import userRouter from "#user/route/user.route";
-import authRouter from "#auth/route/auth.route";
+import userRouter from "#module/user/route/user.route";
+import authRouter from "#module/auth/route/auth.route";
+import courseRouter from "#module/course/route/course.route";
 import { errorHandler } from "#middlewares/error.handler";
-import path from "path";
 import swaggerUi from 'swagger-ui-express';
-import swaggerSpec from './utils/swagger.js';
-
+import swaggerSpec from "./utils/swagger.js";
 const app = express();
-const uploadDir = path.resolve(process.cwd(), "public", "uploads");
-const thumbnailDir = path.resolve(
-  process.cwd(),
-  "public",
-  "thumbnail"
-);
 
 // app.get("/", (_req, _res) => {
 //   //   res.redirect("/api-docs");
@@ -61,9 +54,9 @@ app.get("/", (req: Request, res: Response) => {
 
 app.use("/api/users", userRouter);
 app.use("/api/auth", authRouter);
+app.use("/api/courses", courseRouter);
 app.use(express.static("./"));
-app.use("/api/uploads", express.static(uploadDir));
-app.use("/thumbnail", express.static(thumbnailDir));
+
 app.use((req: Request, _res: Response, next: NextFunction) => {
   next(new Error(`Route ${req.originalUrl} tidak ditemukan`));
 });

@@ -8,13 +8,13 @@ const publicUserSelect = {
   createdAt: true,
   updatedAt: true,
   deletedAt: true,
-} satisfies Prisma.userSelect;
+} satisfies Prisma.UserSelect;
 
 const activeUserWhere = {
   deletedAt: null,
-} satisfies Prisma.userWhereInput;
+} satisfies Prisma.UserWhereInput;
 
-export type UserResponse = Prisma.userGetPayload<{
+export type UserResponse = Prisma.UserGetPayload<{
   select: typeof publicUserSelect;
 }>;
 

@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import userService from "#user/service/user.service";
+import userService from "#module/user/service/user.service";
 import { errorResponse, successResponse } from "#utils/response";
 
 const getValidUserId = (req: Request, res: Response) => {

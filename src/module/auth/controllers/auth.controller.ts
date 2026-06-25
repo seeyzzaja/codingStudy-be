@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import * as AuthService from "#auth/service/auth.service";
+import * as AuthService from "#module/auth/service/auth.service";
 import { AppError } from "#utils/app-error";
 import { asyncHandler } from "#utils/async.handler";
 import { successResponse } from "#utils/response";
