@@ -1,0 +1,13 @@
+model UserPreference {
+  id         String @id @default(uuid()) @db.Uuid
+
+  userId     Int
+  categoryId String @db.Uuid
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, categoryId])
+}

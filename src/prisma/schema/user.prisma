@@ -12,6 +12,8 @@ model User {
   password    String
   
   role      UserRole  @default(STUDENT)
+   preferences UserPreference[]
+  onboardingCompleted   Boolean  @default(false)
   sessions  Session[]
   classes   Class[]   @relation("MentorClasses")
   createdAt   DateTime @default(now())
