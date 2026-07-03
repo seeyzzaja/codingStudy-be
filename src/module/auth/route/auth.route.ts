@@ -3,14 +3,20 @@ import * as AuthController from "#module/auth/controllers/auth.controller";
 import { authenticate } from "#middlewares/auth.middlewares";
 
 const router = Router();
+/**
+ * @swagger
+ * tags:
+ *   name: Auth
+ *   description: Manajemen autentikasi pengguna
+ */
 
 /**
- * @openapi
+ * @swagger
  * /api/auth/register:
  *   post:
- *     tags:
- *       - Auth
- *     summary: Register user baru
+ *     summary: Register pengguna
+ *     tags: [Auth]
+ *     description: Membuat akun baru dan mengembalikan token autentikasi.
  *     requestBody:
  *       required: true
  *       content:
@@ -18,30 +24,52 @@ const router = Router();
  *           schema:
  *             type: object
  *             required:
- *               - name
  *               - email
  *               - password
  *             properties:
  *               name:
  *                 type: string
+ *                 example: Coding Study
  *               email:
  *                 type: string
  *                 format: email
+ *                 example: user@example.com
  *               password:
  *                 type: string
+ *                 format: password
+ *                 example: rahasia123
+ *           example:
+ *             name: Coding Study
+ *             email: user@example.com
+ *             password: rahasia123
  *     responses:
  *       201:
- *         description: Register berhasil.
+ *         description: Register berhasil
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 token:
+ *                   type: string
+ *             example:
+ *               message: Register berhasil
+ *               token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ *       401:
+ *         description: Email atau password salah
  */
+
 router.post("/register", AuthController.register);
 
 /**
- * @openapi
+ * @swagger
  * /api/auth/login:
  *   post:
- *     tags:
- *       - Auth
- *     summary: Login user
+ *     summary: Login pengguna
+ *     tags: [Auth]
+ *     description: Masuk menggunakan email dan password, lalu dapatkan token JWT.
  *     requestBody:
  *       required: true
  *       content:
@@ -55,26 +83,52 @@ router.post("/register", AuthController.register);
  *               email:
  *                 type: string
  *                 format: email
+ *                 example: user@example.com
  *               password:
  *                 type: string
+ *                 format: password
+ *                 example: rahasia123
+ *           example:
+ *             email: user@example.com
+ *             password: rahasia123
  *     responses:
  *       200:
- *         description: Login berhasil.
+ *         description: Login berhasil
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 token:
+ *                   type: string
+ *             example:
+ *               message: Login berhasil
+ *               token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ *       401:
+ *         description: Email atau password salah
  */
 router.post("/login", AuthController.login);
 
 /**
- * @openapi
+ * @swagger
  * /api/auth/logout:
  *   post:
- *     tags:
- *       - Auth
  *     summary: Logout user
+ *     tags: [Auth]
+ *     description: Logout user yang sedang login.
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Logout berhasil.
+ *         description: Logout berhasil
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Logout berhasil
+ *       401:
+ *         description: Tidak terautentikasi
  */
 router.post("/logout", authenticate, AuthController.logout);
 
