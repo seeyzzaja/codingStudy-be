@@ -14,7 +14,7 @@ const options: swaggerJsdoc.Options = {
     },
     servers: [
       {
-        url: `${config.BASE_URL}${config.API_PREFIX}`,
+        url: `${config.BASE_URL}`,
         description: "Development Server",
       },
     ],

@@ -1,4 +1,4 @@
-import { onboardingRepository } from "./onboarding.repository.js";
+import { onboardingRepository } from "../onboarding.repository.js";
 
 export const onboardingService = {
   async getCategories() {
