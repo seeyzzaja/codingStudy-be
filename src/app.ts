@@ -57,6 +57,7 @@ app.get("/", (req: Request, res: Response) => {
 
 app.use("/api/users", userRouter);
 app.use("/api/auth", authRouter);
+app.use("/auth", authRouter);
 app.use("/api/courses", courseRouter);
 app.use("/modules", moduleRoute);
 app.use(

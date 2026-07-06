@@ -15,11 +15,20 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   return successResponse(res, "Login berhasil", result);
 });
 
+export const refreshToken = asyncHandler(async (req: Request, res: Response) => {
+  const { refreshToken } = req.body;
+  const result = await AuthService.refreshToken(refreshToken);
+
+  return successResponse(res, "Berhasil refresh token", result);
+});
+
 export const logout = asyncHandler(async (req: Request, res: Response) => {
   if (!req.user) {
     throw new AppError("User tidak terautentikasi", 401);
   }
-  await AuthService.logout();
+
+  const { refreshToken } = req.body as { refreshToken?: string };
+  await AuthService.logout(req.user.id, refreshToken);
 
   return successResponse(res, "Logout berhasil", null);
 });

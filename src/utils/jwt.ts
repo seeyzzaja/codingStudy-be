@@ -1,5 +1,4 @@
 import jwt from "jsonwebtoken";
-import crypto from "crypto";
 import config from "#utils/env";
 
 type AccessTokenPayload = {
@@ -15,6 +14,6 @@ export const generateAccessToken = (payload: AccessTokenPayload) => {
   );
 };
 
-export const generateRefreshToken = () => {
-  return crypto.randomBytes(64).toString("hex");
+export const verifyAccessToken = (token: string) => {
+  return jwt.verify(token, config.ACCESS_SECRET);
 };
