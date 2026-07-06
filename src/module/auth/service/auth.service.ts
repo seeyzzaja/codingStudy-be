@@ -1,8 +1,9 @@
 import bcrypt from "bcrypt";
 import prisma from "#prisma";
 import { AppError } from "#utils/app-error";
+import { compareToken, hashToken } from "#utils/hash";
 import { generateAccessToken } from "#utils/jwt";
-
+import { generateRefreshToken } from "#utils/token";
 
 type RegisterInput = {
   name: string;
@@ -13,15 +14,6 @@ type RegisterInput = {
 type LoginInput = {
   email: string;
   password: string;
-};
-
-type AuthUser = {
-  id: number;
-  name: string;
-  email: string;
-  password: string;
-  role?: string;
-  deletedAt: Date | null;
 };
 
 const sanitizeUser = <
@@ -38,10 +30,35 @@ const sanitizeUser = <
   return safeUser;
 };
 
+const findActiveSessionByToken = async (refreshToken: string) => {
+  const sessions = await prisma.session.findMany({
+    where: {
+      revoked: false,
+      deletedAt: null,
+    },
+    include: {
+      user: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  for (const session of sessions) {
+    const isMatch = await compareToken(refreshToken, session.tokenHash);
+    if (isMatch) {
+      return session;
+    }
+  }
+
+  return null;
+};
+
 export const register = async (data: RegisterInput) => {
   const existingUser = await prisma.user.findFirst({
     where: {
       email: data.email,
+      deletedAt: null,
     },
   });
 
@@ -63,11 +80,12 @@ export const register = async (data: RegisterInput) => {
 };
 
 export const login = async (data: LoginInput) => {
-  const user = (await prisma.user.findFirst({
+  const user = await prisma.user.findFirst({
     where: {
       email: data.email,
+      deletedAt: null,
     },
-  })) as AuthUser | null;
+  });
 
   if (!user) {
     throw new AppError("Email atau password salah", 401);
@@ -80,14 +98,86 @@ export const login = async (data: LoginInput) => {
 
   const accessToken = generateAccessToken({
     id: user.id,
-    role: user.role ?? "user",
+    role: user.role,
+  });
+  const refreshToken = generateRefreshToken();
+  const tokenHash = await hashToken(refreshToken);
+
+  await prisma.session.create({
+    data: {
+      userId: user.id,
+      tokenHash,
+    },
   });
 
   return {
     user: sanitizeUser(user),
     accessToken,
+    refreshToken,
   };
 };
-export const logout = async () => {
+
+export const refreshToken = async (token: string) => {
+  if (!token || typeof token !== "string") {
+    throw new AppError("Refresh token wajib diisi", 400);
+  }
+
+  const normalizedToken = token.trim();
+  if (!normalizedToken) {
+    throw new AppError("Refresh token wajib diisi", 400);
+  }
+
+  const session = await findActiveSessionByToken(normalizedToken);
+  if (!session || session.user.deletedAt) {
+    throw new AppError("Refresh token tidak valid", 401);
+  }
+
+  const newAccessToken = generateAccessToken({
+    id: session.user.id,
+    role: session.user.role,
+  });
+
+  return {
+    accessToken: newAccessToken,
+  };
+};
+
+export const logout = async (userId: number, refreshToken?: string) => {
+  if (refreshToken && refreshToken.trim()) {
+    const session = await findActiveSessionByToken(refreshToken.trim());
+
+    if (!session) {
+      throw new AppError("Refresh token tidak valid", 401);
+    }
+
+    if (session.userId !== userId) {
+      throw new AppError("Refresh token tidak sesuai dengan user", 403);
+    }
+
+    await prisma.session.update({
+      where: {
+        id: session.id,
+      },
+      data: {
+        revoked: true,
+        deletedAt: new Date(),
+      },
+    });
+
+    return { message: "Logout berhasil" };
+  }
+
+  await prisma.session.updateMany({
+    where: {
+      userId,
+      revoked: false,
+      deletedAt: null,
+    },
+    data: {
+      revoked: true,
+      deletedAt: new Date(),
+    },
+  });
+
   return { message: "Logout berhasil" };
 };

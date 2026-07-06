@@ -3,6 +3,7 @@ import * as AuthController from "#module/auth/controllers/auth.controller";
 import { authenticate } from "#middlewares/auth.middlewares";
 
 const router = Router();
+
 /**
  * @swagger
  * tags:
@@ -14,9 +15,8 @@ const router = Router();
  * @swagger
  * /api/auth/register:
  *   post:
- *     summary: Register pengguna
+ *     summary: register pengguna
  *     tags: [Auth]
- *     description: Membuat akun baru dan mengembalikan token autentikasi.
  *     requestBody:
  *       required: true
  *       content:
@@ -29,7 +29,8 @@ const router = Router();
  *             properties:
  *               name:
  *                 type: string
- *                 example: Coding Study
+ *                 format: name
+ *                 example: coding
  *               email:
  *                 type: string
  *                 format: email
@@ -38,13 +39,9 @@ const router = Router();
  *                 type: string
  *                 format: password
  *                 example: rahasia123
- *           example:
- *             name: Coding Study
- *             email: user@example.com
- *             password: rahasia123
  *     responses:
- *       201:
- *         description: Register berhasil
+ *       200:
+ *         description: Login berhasil
  *         content:
  *           application/json:
  *             schema:
@@ -54,9 +51,6 @@ const router = Router();
  *                   type: string
  *                 token:
  *                   type: string
- *             example:
- *               message: Register berhasil
- *               token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
  *       401:
  *         description: Email atau password salah
  */
@@ -69,7 +63,6 @@ router.post("/register", AuthController.register);
  *   post:
  *     summary: Login pengguna
  *     tags: [Auth]
- *     description: Masuk menggunakan email dan password, lalu dapatkan token JWT.
  *     requestBody:
  *       required: true
  *       content:
@@ -88,9 +81,6 @@ router.post("/register", AuthController.register);
  *                 type: string
  *                 format: password
  *                 example: rahasia123
- *           example:
- *             email: user@example.com
- *             password: rahasia123
  *     responses:
  *       200:
  *         description: Login berhasil
@@ -103,9 +93,6 @@ router.post("/register", AuthController.register);
  *                   type: string
  *                 token:
  *                   type: string
- *             example:
- *               message: Login berhasil
- *               token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
  *       401:
  *         description: Email atau password salah
  */
@@ -113,23 +100,78 @@ router.post("/login", AuthController.login);
 
 /**
  * @swagger
+ * /api/auth/refresh-token:
+ *   post:
+ *     summary: Refresh access token pengguna
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - refreshToken
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ *                 example: 550e8400-e29b-41d4-a716-446655440000
+ *     responses:
+ *       200:
+ *         description: Refresh token berhasil
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     accessToken:
+ *                       type: string
+ *       401:
+ *         description: Refresh token tidak valid
+ */
+router.post("/refresh-token", AuthController.refreshToken);
+
+/**
+ * @swagger
  * /api/auth/logout:
  *   post:
- *     summary: Logout user
+ *     summary: Logout pengguna
  *     tags: [Auth]
- *     description: Logout user yang sedang login.
  *     security:
  *       - bearerAuth: []
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ *                 example: 550e8400-e29b-41d4-a716-446655440000
  *     responses:
  *       200:
  *         description: Logout berhasil
  *         content:
  *           application/json:
- *             example:
- *               message: Logout berhasil
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   nullable: true
  *       401:
- *         description: Tidak terautentikasi
+ *         description: User tidak terautentikasi
  */
 router.post("/logout", authenticate, AuthController.logout);
 
 export default router;
+
+
+
