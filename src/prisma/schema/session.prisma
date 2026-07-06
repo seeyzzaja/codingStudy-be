@@ -1,0 +1,18 @@
+model Session {
+  id          String     @id @default(uuid()) @db.Uuid
+
+  userId      Int        @map("user_id")
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  tokenHash   String     @map("token_hash") @db.Text
+
+  revoked     Boolean    @default(false)
+
+  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt   DateTime?  @map("deleted_at") @db.Timestamptz(6)
+
+  @@index([userId])
+  @@index([deletedAt])
+  @@map("sessions")
+}

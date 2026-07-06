@@ -1,0 +1,29 @@
+enum ClassStatus {
+  DRAFT
+  PUBLISHED
+}
+
+model Class {
+  id           String      @id @default(uuid()) @db.Uuid
+  mentorId     Int         @map("mentor_id")
+  categoryId   String?     @map("category_id") @db.Uuid
+  title        String      @map("judul") @db.VarChar(255)
+  description  String      @map("deskripsi") @db.Text
+  price        Decimal     @map("harga") @db.Decimal(12, 2)
+  thumbnailUrl String?     @map("thumbnail_url") @db.Text
+  status       ClassStatus @default(DRAFT)
+  
+  mentor       User       @relation("MentorClasses", fields: [mentorId], references: [id], onDelete: Restrict)
+  category     Category?  @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  modules      Module[]
+
+  createdAt    DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime    @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt    DateTime?   @map("deleted_at") @db.Timestamptz(6)
+
+  @@index([mentorId])
+  @@index([categoryId])
+  @@index([status])
+  @@index([deletedAt])
+  @@map("classes")
+}
