@@ -7,23 +7,28 @@ const adminName = process.env.ADMIN_NAME || "Super Admin";
 const adminEmail = process.env.ADMIN_EMAIL || "admin@example.com";
 const adminPassword = process.env.ADMIN_PASSWORD || "admin12345";
 
-async function seedAdmin() {
+export async function seedAdmin() {
   const hashedPassword = await bcrypt.hash(adminPassword, 10);
 
   const admin = await prisma.user.upsert({
-    where: { email: adminEmail },
+    where: {
+      email: adminEmail,
+    },
+
     update: {
       name: adminName,
       password: hashedPassword,
       role: UserRole.ADMIN,
       deletedAt: null,
     },
+
     create: {
       name: adminName,
       email: adminEmail,
       password: hashedPassword,
       role: UserRole.ADMIN,
     },
+
     select: {
       id: true,
       name: true,
@@ -32,17 +37,7 @@ async function seedAdmin() {
     },
   });
 
-  console.log("Admin seed berhasil dijalankan.");
-  console.log(`Email: ${admin.email}`);
-  console.log(`Role: ${admin.role}`);
-}
+  console.log("Admin berhasil dibuat");
 
-seedAdmin()
-  .catch((error) => {
-    console.error("Gagal menjalankan admin seed.");
-    console.error(error);
-    process.exitCode = 1;
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+  return admin;
+}
