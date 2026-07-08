@@ -15,6 +15,7 @@ import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from "./utils/swagger.js";
 import onboardingRoute from"#module/onboarding/route/onboarding.route";
 import moduleRoute from "#module/module/route/module.route";
+import categoryRoute from "#module/category/route/category.route";
 
 const app = express();
 
@@ -64,6 +65,7 @@ app.use(
   "/api/onboarding",
   onboardingRoute
 );
+app.use("/api/categories", categoryRoute);
 app.use(express.static("./"));
 
 app.use((req: Request, _res: Response, next: NextFunction) => {
