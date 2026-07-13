@@ -1,7 +1,14 @@
 import { Router } from "express";
 import * as AuthController from "#module/auth/controllers/auth.controller";
 import { authenticate } from "#middlewares/auth.middlewares";
-
+import { validateZod } from "#middlewares/validate-zod.middleware";
+import {
+  loginSchema,
+  logoutSchema,
+  refreshTokenSchema,
+  registerSchema,
+  verifyOtpSchema,
+} from "#validation/auth.validation";
 const router = Router();
 
 /**
@@ -15,7 +22,7 @@ const router = Router();
  * @swagger
  * /api/auth/register:
  *   post:
- *     summary: register pengguna
+ *     summary: Register pengguna
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -24,13 +31,13 @@ const router = Router();
  *           schema:
  *             type: object
  *             required:
+ *               - name
  *               - email
  *               - password
  *             properties:
  *               name:
  *                 type: string
- *                 format: name
- *                 example: coding
+ *                 example: Coding Study
  *               email:
  *                 type: string
  *                 format: email
@@ -40,23 +47,69 @@ const router = Router();
  *                 format: password
  *                 example: rahasia123
  *     responses:
- *       200:
- *         description: Login berhasil
+ *       201:
+ *         description: Register berhasil dan OTP berhasil dikirim ke email
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
  *                 message:
  *                   type: string
- *                 token:
- *                   type: string
- *       401:
- *         description: Email atau password salah
+ *                   example: Register berhasil
+ *                 data:
+ *                   type: object
+ *       409:
+ *         description: Email sudah terdaftar
+ *       500:
+ *         description: Gagal mengirim email OTP
  */
+router.post(
+  "/register",
+  validateZod(registerSchema),
+  AuthController.register
+);
 
-router.post("/register", AuthController.register);
-
+/**
+ * @swagger
+ * /api/auth/verify-otp:
+ *   post:
+ *     tags:
+ *       - Auth
+ *     summary: Verifikasi OTP registrasi
+ *     description: Digunakan untuk memverifikasi akun menggunakan kode OTP yang dikirim ke email.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: user@gmail.com
+ *               otp:
+ *                 type: string
+ *                 example: "123456"
+ *     responses:
+ *       200:
+ *         description: Verifikasi email berhasil
+ *       400:
+ *         description: OTP salah atau sudah kedaluwarsa
+ *       404:
+ *         description: User atau OTP tidak ditemukan
+ *       409:
+*         description: Email sudah diverifikasi
+ */
+router.post(
+  "/verify-otp",
+  validateZod(verifyOtpSchema),
+  AuthController.verifyOtp
+);
 /**
  * @swagger
  * /api/auth/login:
@@ -95,8 +148,10 @@ router.post("/register", AuthController.register);
  *                   type: string
  *       401:
  *         description: Email atau password salah
+ *       403:
+*         description: Email belum diverifikasi
  */
-router.post("/login", AuthController.login);
+router.post("/login", validateZod(loginSchema), AuthController.login);
 
 /**
  * @swagger
@@ -134,8 +189,11 @@ router.post("/login", AuthController.login);
  *       401:
  *         description: Refresh token tidak valid
  */
-router.post("/refresh-token", AuthController.refreshToken);
-
+router.post(
+  "/refresh-token",
+  validateZod(refreshTokenSchema),
+  AuthController.refreshToken
+);
 /**
  * @swagger
  * /api/auth/logout:
@@ -169,7 +227,12 @@ router.post("/refresh-token", AuthController.refreshToken);
  *       401:
  *         description: User tidak terautentikasi
  */
-router.post("/logout", authenticate, AuthController.logout);
+router.post(
+  "/logout",
+  authenticate,
+  validateZod(logoutSchema),
+  AuthController.logout
+);
 
 export default router;
 
