@@ -91,3 +91,37 @@ export const logoutSchema = z.object({
 export type LogoutInput = z.infer<
   typeof logoutSchema
 >;
+/* ===========================
+   forgot password
+=========================== */
+
+export const forgotPasswordSchema = z.object({
+  email: z.email(),
+});
+
+export type ForgotPasswordInput =
+  z.infer<typeof forgotPasswordSchema>;
+
+/* ===========================
+   ferivy otp reset password
+=========================== */
+  export const verifyForgotPasswordSchema =
+  z.object({
+    email: z.email(),
+    otp: z.string().length(6),
+  });
+
+export type VerifyForgotPasswordInput =
+  z.infer<typeof verifyForgotPasswordSchema>;
+
+/* ===========================
+    reset password
+=========================== */
+  export const resetPasswordSchema =
+  z.object({
+    email: z.email(),
+    password: z.string().min(8),
+  });
+
+export type ResetPasswordInput =
+  z.infer<typeof resetPasswordSchema>;
