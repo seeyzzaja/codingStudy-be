@@ -9,8 +9,27 @@ erDiagram
         string nama
         string email
         string password_hash
-        string role "Student | Mentor | Admin"
+        uuid role_id FK
         datetime created_at
+    }
+
+    Roles {
+        uuid id PK
+        string name
+        string description
+        datetime created_at
+    }
+
+    Permissions {
+        uuid id PK
+        string name
+        string description
+        datetime created_at
+    }
+
+    Role_Permissions {
+        uuid role_id PK, FK
+        uuid permission_id PK, FK
     }
 
     Classes {
@@ -56,6 +75,10 @@ erDiagram
     }
 
     %% Relationships
+    Roles ||--o{ Users : "ditetapkan ke"
+    Roles ||--o{ Role_Permissions : "memiliki"
+    Permissions ||--o{ Role_Permissions : "diberikan pada"
+    
     Users ||--o{ Classes : "Mentor mengelola Kelas"
     Classes ||--o{ Modules : "memiliki Modul"
     
@@ -70,8 +93,10 @@ erDiagram
 ```
 
 ## Relasi Kunci:
-1. **Users (Mentor) ke Classes (1:N):** Seorang Mentor dapat membuat banyak kelas.
-2. **Classes ke Modules (1:N):** Setiap kelas dapat memiliki banyak modul video.
+1. **Roles ke Users (1:N):** Setiap peran (Role) dapat dimiliki oleh banyak pengguna.
+2. **Roles dan Permissions (M:N) direpresentasikan oleh `Role_Permissions`:** Sebuah peran dapat memiliki banyak izin (Permissions), dan satu izin dapat diterapkan ke banyak peran.
+3. **Users (Mentor) ke Classes (1:N):** Seorang Mentor dapat membuat banyak kelas.
+4. **Classes ke Modules (1:N):** Setiap kelas dapat memiliki banyak modul video.
 3. **Users (Student) ke Transactions (1:N):** Seorang siswa dapat melakukan banyak transaksi pembelian.
 4. **Classes ke Transactions (1:N):** Sebuah kelas dapat dibeli dalam banyak transaksi.
 5. **Users (Student) dan Classes (M:N) direpresentasikan oleh `User_Classes`:** Siswa dapat memiliki banyak kelas, dan kelas dapat dimiliki oleh banyak siswa. Tabel pivot ini juga digunakan untuk melacak `progress_percentage`.

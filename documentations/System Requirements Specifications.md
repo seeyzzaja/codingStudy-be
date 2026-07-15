@@ -162,7 +162,7 @@ Platform ini memfasilitasi alur kerja (workflow) utama berikut:
 Berdasarkan implementasi _Prisma Schema_, struktur database terbagi menjadi tabel-tabel utama sebagai berikut:
 
 - **Tabel Terimplementasi (Saat Ini):**
-  - `user`: (id, name, email, password, role, onboardingCompleted, timestamps).
+  - `user`: (id, name, email, password, role_id, onboardingCompleted, timestamps).
   - `sessions`: (id, user_id, token_hash, revoked, timestamps).
   - `classes`: (id, mentor_id, category_id, judul, deskripsi, harga, thumbnail_url, status [DRAFT/PUBLISHED], timestamps).
   - `modules`: (id, classId, urutan, judul, deskripsi, videoUrl, timestamps).
@@ -170,6 +170,9 @@ Berdasarkan implementasi _Prisma Schema_, struktur database terbagi menjadi tabe
   - `UserPreference`: (id, userId, categoryId, timestamps).
 
 - **Tabel Terencana (Fase Berikutnya):**
+  - `roles`: (id, name, description, timestamps).
+  - `permissions`: (id, name, description, timestamps).
+  - `role_permissions`: (role_id, permission_id).
   - `otp_requests` (Lupa Password): (id, email, otp_code, expires_at, is_used).
   - `Transactions`: (id, student_id, class_id, amount, status, payment_method, updated_at).
   - `User_Classes` (Kepemilikan Kelas): (student_id, class_id, progress_percentage).
