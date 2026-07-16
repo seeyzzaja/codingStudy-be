@@ -14,6 +14,7 @@ import {
   listCoursesValidation,
   updateCourseValidation,
 } from "#validation/course.validation";
+import { requireRole } from "#middlewares/require-role.middleware";
 
 const router = Router();
 
@@ -132,14 +133,18 @@ router.get("/:id", getCourseByIdValidation, getCourseById);
  *               status:
  *                 type: string
  *                 enum: [DRAFT, PUBLISHED]
- *               mentorId:
- *                 type: integer
- *                 description: Opsional, khusus admin.
+ *
  *     responses:
  *       201:
  *         description: Course berhasil dibuat.
  */
-router.post("/", authenticate, createCourseValidation, createCourse);
+router.post(
+  "/",
+  authenticate,
+  requireRole("MENTOR"),
+  createCourseValidation,
+  createCourse
+);
 
 /**
  * @openapi
@@ -176,14 +181,18 @@ router.post("/", authenticate, createCourseValidation, createCourse);
  *               status:
  *                 type: string
  *                 enum: [DRAFT, PUBLISHED]
- *               mentorId:
- *                 type: integer
- *                 description: Hanya admin yang boleh mengubah mentor.
+ *
  *     responses:
  *       200:
  *         description: Course berhasil diperbarui.
  */
-router.put("/:id", authenticate, updateCourseValidation, updateCourse);
+router.put(
+  "/:id",
+  authenticate,
+  requireRole("MENTOR"),
+  updateCourseValidation,
+  updateCourse
+);
 
 /**
  * @openapi
@@ -205,6 +214,12 @@ router.put("/:id", authenticate, updateCourseValidation, updateCourse);
  *       200:
  *         description: Course berhasil dihapus.
  */
-router.delete("/:id", authenticate, deleteCourseValidation, deleteCourse);
+router.delete(
+  "/:id",
+  authenticate,
+  requireRole("MENTOR"),
+  deleteCourseValidation,
+  deleteCourse
+);
 
 export default router;

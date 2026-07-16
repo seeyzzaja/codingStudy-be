@@ -34,13 +34,28 @@ export const show = async (req: Request, res: Response) => {
 };
 
 export const store = async (req: Request, res: Response) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, role } = req.body;
 
-  if (!name || !email || !password) {
-    return errorResponse(res, "Name, email, and password are required", 400);
+  if (!name || !email || !password || !role) {
+    return errorResponse(
+      res,
+      "Name, email, password, dan role wajib diisi",
+      400
+    );
   }
 
-  const user = await userService.create({ name, email, password });
+  const validRoles = ["ADMIN", "MENTOR", "STUDENT"];
+
+  if (!validRoles.includes(role)) {
+    return errorResponse(res, "Role tidak valid", 400);
+  }
+
+  const user = await userService.create({
+    name,
+    email,
+    password,
+    role,
+  });
 
   return successResponse(res, "User created successfully", user, null, 201);
 };
@@ -49,6 +64,14 @@ export const update = async (req: Request, res: Response) => {
   const id = getValidUserId(req, res);
 
   if (!id) return;
+
+  if (req.body.role) {
+    const validRoles = ["ADMIN", "MENTOR", "STUDENT"];
+
+    if (!validRoles.includes(req.body.role)) {
+      return errorResponse(res, "Role tidak valid", 400);
+    }
+  }
 
   const user = await userService.update(id, req.body);
 

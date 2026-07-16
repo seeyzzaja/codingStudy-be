@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
-import * as ForgotPasswordService from "../service/forgot-password.service";
+import * as ForgotPasswordService from "../service/forgot-password.service.js";
 
 export const forgotPassword = async (
   req: Request,

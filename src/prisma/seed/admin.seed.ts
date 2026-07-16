@@ -1,6 +1,5 @@
 import "dotenv/config";
 import bcrypt from "bcrypt";
-import { UserRole } from "@prisma/client";
 import prisma from "#utils/prisma";
 
 const adminName = process.env.ADMIN_NAME || "Super Admin";
@@ -10,6 +9,18 @@ const adminPassword = process.env.ADMIN_PASSWORD || "admin12345";
 export async function seedAdmin() {
   const hashedPassword = await bcrypt.hash(adminPassword, 10);
 
+  const adminRole = await prisma.role.findUnique({
+    where: {
+      name: "ADMIN",
+    },
+  });
+
+  if (!adminRole) {
+    throw new Error(
+      "Role ADMIN tidak ditemukan. Jalankan seedRole terlebih dahulu."
+    );
+  }
+
   const admin = await prisma.user.upsert({
     where: {
       email: adminEmail,
@@ -18,26 +29,45 @@ export async function seedAdmin() {
     update: {
       name: adminName,
       password: hashedPassword,
-      role: UserRole.ADMIN,
       deletedAt: null,
+      isVerified: true,
+      onboardingCompleted: true,
+      role: {
+        connect: {
+          id: adminRole.id,
+        },
+      },
     },
 
     create: {
       name: adminName,
       email: adminEmail,
       password: hashedPassword,
-      role: UserRole.ADMIN,
+      isVerified: true,
+      onboardingCompleted: true,
+      role: {
+        connect: {
+          id: adminRole.id,
+        },
+      },
     },
 
     select: {
       id: true,
       name: true,
       email: true,
-      role: true,
+      isVerified: true,
+      onboardingCompleted: true,
+      role: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
     },
   });
 
-  console.log("Admin berhasil dibuat");
+  console.log("✅ Admin berhasil dibuat");
 
   return admin;
 }
