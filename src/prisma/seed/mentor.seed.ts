@@ -1,10 +1,12 @@
 import "dotenv/config";
 import bcrypt from "bcrypt";
-import { UserRole } from "@prisma/client";
 import prisma from "#utils/prisma";
 
 const mentorPassword =
   process.env.MENTOR_PASSWORD || "mentor12345";
+
+const mentorName = "Mentor Backend";
+const mentorEmail = "mentor@example.com";
 
 export async function seedMentor() {
   const hashedPassword = await bcrypt.hash(
@@ -12,28 +14,64 @@ export async function seedMentor() {
     10
   );
 
-  const mentor = await prisma.user.upsert({
+  // Cari role MENTOR
+  const mentorRole = await prisma.role.findUnique({
     where: {
-      name: "Mentor Backend",
-      email: "mentor@example.com",
-    },
-
-    update: {
-      name: "Mentor Backend",
-      password: hashedPassword,
-      role: UserRole.MENTOR,
-      deletedAt: null,
-    },
-
-    create: {
-      name: "Mentor Backend",
-      email: "mentor@example.com",
-      password: hashedPassword,
-      role: UserRole.MENTOR,
+      name: "MENTOR",
     },
   });
 
-  console.log("Mentor berhasil dibuat");
+  if (!mentorRole) {
+    throw new Error(
+      "Role MENTOR tidak ditemukan. Jalankan seedRole terlebih dahulu."
+    );
+  }
+
+  const mentor = await prisma.user.upsert({
+    where: {
+      email: mentorEmail,
+    },
+
+    update: {
+      name: mentorName,
+      password: hashedPassword,
+      isVerified: true,
+      onboardingCompleted: true,
+      deletedAt: null,
+      role: {
+        connect: {
+          id: mentorRole.id,
+        },
+      },
+    },
+
+    create: {
+      name: mentorName,
+      email: mentorEmail,
+      password: hashedPassword,
+      isVerified: true,
+      onboardingCompleted: true,
+      role: {
+        connect: {
+          id: mentorRole.id,
+        },
+      },
+    },
+
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+  });
+
+  console.log("✅ Mentor berhasil dibuat");
 
   return mentor;
 }

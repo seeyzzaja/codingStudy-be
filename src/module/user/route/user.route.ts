@@ -5,6 +5,8 @@ import {
   store,
   update,
 } from "#module/user/controllers/user.controllers";
+import { authenticate } from "#middlewares/auth.middlewares";
+import { requireRole } from "#middlewares/require-role.middleware";
 import { Router } from "express";
 
 const router = Router();
@@ -16,11 +18,17 @@ const router = Router();
  *     tags:
  *       - Users
  *     summary: Get all users
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Daftar user berhasil diambil.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden.
  */
-router.get("/", index);
+router.get("/", authenticate, requireRole("ADMIN"), index);
 
 /**
  * @openapi
@@ -29,6 +37,8 @@ router.get("/", index);
  *     tags:
  *       - Users
  *     summary: Get user by id
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -38,8 +48,14 @@ router.get("/", index);
  *     responses:
  *       200:
  *         description: User berhasil diambil.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden.
+ *       404:
+ *         description: User tidak ditemukan.
  */
-router.get("/:id", show);
+router.get("/:id", authenticate, requireRole("ADMIN"), show);
 
 /**
  * @openapi
@@ -48,6 +64,8 @@ router.get("/:id", show);
  *     tags:
  *       - Users
  *     summary: Create user
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -58,6 +76,7 @@ router.get("/:id", show);
  *               - name
  *               - email
  *               - password
+ *               - role
  *             properties:
  *               name:
  *                 type: string
@@ -66,11 +85,21 @@ router.get("/:id", show);
  *                 format: email
  *               password:
  *                 type: string
+ *               role:
+ *                 type: string
+ *                 enum:
+ *                   - ADMIN
+ *                   - MENTOR
+ *                   - STUDENT
  *     responses:
  *       201:
  *         description: User berhasil dibuat.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden.
  */
-router.post("/", store);
+router.post("/", authenticate, requireRole("ADMIN"), store);
 
 /**
  * @openapi
@@ -79,6 +108,8 @@ router.post("/", store);
  *     tags:
  *       - Users
  *     summary: Update user
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -99,11 +130,23 @@ router.post("/", store);
  *                 format: email
  *               password:
  *                 type: string
+ *               role:
+ *                 type: string
+ *                 enum:
+ *                   - ADMIN
+ *                   - MENTOR
+ *                   - STUDENT
  *     responses:
  *       200:
  *         description: User berhasil diperbarui.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden.
+ *       404:
+ *         description: User tidak ditemukan.
  */
-router.put("/:id", update);
+router.put("/:id", authenticate, requireRole("ADMIN"), update);
 
 /**
  * @openapi
@@ -112,6 +155,8 @@ router.put("/:id", update);
  *     tags:
  *       - Users
  *     summary: Delete user
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -121,7 +166,13 @@ router.put("/:id", update);
  *     responses:
  *       200:
  *         description: User berhasil dihapus.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden.
+ *       404:
+ *         description: User tidak ditemukan.
  */
-router.delete("/:id", destroy);
+router.delete("/:id", authenticate, requireRole("ADMIN"), destroy);
 
 export default router;

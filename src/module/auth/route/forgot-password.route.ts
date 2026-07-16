@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-import * as ForgotPasswordController from "../controllers/forgot-password.controller";
+import * as ForgotPasswordController from "../controllers/forgot-password.controller.js";
 
 import { validateZod } from "#middlewares/validate-zod.middleware";
 

@@ -1,10 +1,12 @@
-import { Prisma, ClassStatus, UserRole } from "@prisma/client";
+import { Prisma, ClassStatus } from "@prisma/client";
 import prisma from "#utils/prisma";
 
 export async function seedClass() {
   const mentor = await prisma.user.findFirst({
     where: {
-      role: UserRole.MENTOR,
+      role: {
+        name: "MENTOR",
+      },
       deletedAt: null,
     },
   });

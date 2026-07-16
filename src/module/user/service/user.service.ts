@@ -1,10 +1,21 @@
+import bcrypt from "bcrypt";
 import type { Prisma } from "@prisma/client";
 import prisma from "#prisma";
+import { AppError } from "#utils/app-error";
 
 const publicUserSelect = {
   id: true,
   name: true,
   email: true,
+  roleId: true,
+  role: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+  isVerified: true,
+  onboardingCompleted: true,
   createdAt: true,
   updatedAt: true,
   deletedAt: true,
@@ -22,6 +33,7 @@ export type CreateUserInput = {
   name: string;
   email: string;
   password: string;
+  role: "ADMIN" | "MENTOR" | "STUDENT";
 };
 
 export type UpdateUserInput = Partial<CreateUserInput>;
@@ -57,23 +69,141 @@ const userService = {
   },
 
   async create(data: CreateUserInput): Promise<UserResponse> {
+    const existingUser = await prisma.user.findUnique({
+      where: {
+        email: data.email,
+      },
+    });
+
+    if (existingUser) {
+      throw new AppError("Email sudah digunakan", 409);
+    }
+
+    const role = await prisma.role.findUnique({
+      where: {
+        name: data.role,
+      },
+    });
+
+    if (!role) {
+      throw new AppError("Role tidak ditemukan", 404);
+    }
+
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+
     return prisma.user.create({
-      data,
+      data: {
+        name: data.name,
+        email: data.email,
+        password: hashedPassword,
+        role: {
+          connect: {
+            id: role.id,
+          },
+        },
+      },
       select: publicUserSelect,
     });
   },
 
   async update(id: number, data: UpdateUserInput): Promise<UserResponse> {
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        id,
+        deletedAt: null,
+      },
+    });
+
+    if (!existingUser) {
+      throw new AppError("User tidak ditemukan", 404);
+    }
+
+    if (data.email !== undefined) {
+      const emailExists = await prisma.user.findFirst({
+        where: {
+          email: data.email,
+          NOT: {
+            id,
+          },
+        },
+      });
+
+      if (emailExists) {
+        throw new AppError("Email sudah digunakan", 409);
+      }
+    }
+
+    let roleId: number | undefined;
+
+    if (data.role !== undefined) {
+      const role = await prisma.role.findUnique({
+        where: {
+          name: data.role,
+        },
+      });
+
+      if (!role) {
+        throw new AppError("Role tidak ditemukan", 404);
+      }
+
+      roleId = role.id;
+    }
+
+    let hashedPassword: string | undefined;
+
+    if (data.password !== undefined) {
+      hashedPassword = await bcrypt.hash(data.password, 10);
+    }
+
     return prisma.user.update({
       where: {
         id,
       },
-      data,
+      data: {
+        ...(data.name !== undefined
+          ? {
+              name: data.name,
+            }
+          : {}),
+
+        ...(data.email !== undefined
+          ? {
+              email: data.email,
+            }
+          : {}),
+
+        ...(hashedPassword !== undefined
+          ? {
+              password: hashedPassword,
+            }
+          : {}),
+
+        ...(roleId !== undefined
+          ? {
+              role: {
+                connect: {
+                  id: roleId,
+                },
+              },
+            }
+          : {}),
+      },
       select: publicUserSelect,
     });
   },
 
   async softDelete(id: number): Promise<UserResponse> {
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        id,
+        deletedAt: null,
+      },
+    });
+
+    if (!existingUser) {
+      throw new AppError("User tidak ditemukan", 404);
+    }
+
     return prisma.user.update({
       where: {
         id,

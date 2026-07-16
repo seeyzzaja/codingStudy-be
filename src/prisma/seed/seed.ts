@@ -1,14 +1,20 @@
 import prisma from "#utils/prisma";
 
-import { seedAdmin } from "./admin.seed";
-import { seedMentor } from "./mentor.seed";
-import { seedCategory } from "./category.seed";
-import { seedClass } from "./class.seed";
+import { seedAdmin } from "./admin.seed.js";
+import { seedMentor } from "./mentor.seed.js";
+import { seedCategory } from "./category.seed.js";
+import { seedClass } from "./class.seed.js";
+import { seedRole } from "./role.seed.js";
+import { seedPermission } from "./permission.seed.js";
+import { seedRolePermission } from "./role-permission.seed.js";
 
 async function main() {
-
   console.log("Menjalankan Seeder...");
+  await seedRole();
 
+  await seedPermission();
+
+  await seedRolePermission();
 
   await seedAdmin();
 
@@ -18,9 +24,9 @@ async function main() {
 
   await seedClass();
 
+  
 
   console.log("Semua Seeder berhasil dijalankan");
-
 }
 
 main()
