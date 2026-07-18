@@ -3,9 +3,6 @@ import { onboardingController } from "./onboarding.controller.js";
 import { authenticate } from "#middlewares/auth.middlewares";
 
 const router = Router();
-
-
-
 /**
  * @openapi
  * /api/onboarding/complete:

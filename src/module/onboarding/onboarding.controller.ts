@@ -3,15 +3,6 @@ import { AppError } from "#utils/app-error";
 import { onboardingService } from "./onboarding.service.js";
 
 export const onboardingController = {
-  async getCategories(
-    _req: Request,
-    res: Response
-  ) {
-    const categories =
-      await onboardingService.getCategories();
-
-    return res.json(categories);
-  },
 
   async complete(
     req: Request,

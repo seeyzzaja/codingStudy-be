@@ -1,14 +1,6 @@
 import prisma from "#utils/prisma";
 
 export const onboardingRepository = {
-  getCategories() {
-    return prisma.category.findMany({
-      orderBy: {
-        name: "asc",
-      },
-    });
-  },
-
   deletePreferences(userId: number) {
     return prisma.userPreference.deleteMany({
       where: {
