@@ -1,24 +1,22 @@
-enum UserRole {
-  STUDENT
-  MENTOR
-  ADMIN
-}
-
-
 model User {
-  id          Int      @id @default(autoincrement())
-  name        String
-  email       String
-  password    String
-  
-  role      UserRole  @default(STUDENT)
-   preferences UserPreference[]
-  onboardingCompleted   Boolean  @default(false)
-  sessions  Session[]
-  classes   Class[]   @relation("MentorClasses")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  deletedAt   DateTime? @map("deleted_at")
- 
+  id       Int    @id @default(autoincrement())
+  name     String
+  email    String @unique
+  password String
+
+  roleId Int
+  role   Role @relation(fields: [roleId], references: [id])
+
+  preferences         UserPreference[]
+  onboardingCompleted Boolean          @default(false)
+  isVerified          Boolean          @default(false)
+  sessions            Session[]
+  otp                 Otp[]
+  classes             Class[]          @relation("MentorClasses")
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? @map("deleted_at")
+
   @@map("user")
 }

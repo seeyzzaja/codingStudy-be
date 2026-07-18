@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { AppError } from "#utils/app-error";
-import { onboardingService } from "./onboarding.service.js";
+import { onboardingService } from "../service/onboarding.service.js";
 
 export const onboardingController = {
   async complete(

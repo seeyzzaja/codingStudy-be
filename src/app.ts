@@ -13,8 +13,10 @@ import courseRouter from "#module/course/route/course.route";
 import { errorHandler } from "#middlewares/error.handler";
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from "./utils/swagger.js";
-import onboardingRoute from"#module/onboarding/onboarding.route";
-
+import onboardingRoute from"#module/onboarding/route/onboarding.route";
+import moduleRoute from "#module/module/route/module.route";
+import categoryRoute from "#module/category/route/category.route";
+import forgotPasswordRoute from "#module/auth/route/forgot-password.route";
 const app = express();
 
 // app.get("/", (_req, _res) => {
@@ -56,11 +58,16 @@ app.get("/", (req: Request, res: Response) => {
 
 app.use("/api/users", userRouter);
 app.use("/api/auth", authRouter);
+app.use("/api/auth", forgotPasswordRoute);
+app.use("/auth", authRouter);
+app.use("/auth", forgotPasswordRoute);
 app.use("/api/courses", courseRouter);
+app.use("/modules", moduleRoute);
 app.use(
   "/api/onboarding",
   onboardingRoute
 );
+app.use("/api/categories", categoryRoute);
 app.use(express.static("./"));
 
 app.use((req: Request, _res: Response, next: NextFunction) => {

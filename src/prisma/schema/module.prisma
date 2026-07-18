@@ -1,0 +1,17 @@
+model Module {
+  id      String @id @default(uuid()) @db.Uuid
+  classId String @db.Uuid
+
+  urutan    Int
+  judul     String
+  deskripsi String?
+  videoUrl  String?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  class Class @relation(fields: [classId], references: [id])
+
+  @@map("modules")
+}

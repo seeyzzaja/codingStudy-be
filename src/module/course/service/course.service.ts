@@ -1,4 +1,4 @@
-import type { ClassStatus, Prisma, UserRole } from "@prisma/client";
+import type { ClassStatus, Prisma } from "@prisma/client";
 import prisma from "#prisma";
 import { AppError } from "#utils/app-error";
 
@@ -18,7 +18,12 @@ const courseSelect = {
       id: true,
       name: true,
       email: true,
-      role: true,
+      role: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
     },
   },
 } satisfies Prisma.ClassSelect;
@@ -38,7 +43,6 @@ export type CreateCourseInput = {
   price: number;
   thumbnailUrl?: string;
   status?: ClassStatus;
-  mentorId?: number;
 };
 
 export type UpdateCourseInput = Partial<CreateCourseInput> & {
@@ -66,13 +70,12 @@ const serializeCourse = (course: CourseRecord) => ({
   price: course.price.toString(),
 });
 
-const ensureCourseManagePermission = (course: CourseRecord, authUser: AuthUser) => {
+const ensureCourseManagePermission = (
+  course: CourseRecord,
+  authUser: AuthUser
+) => {
   if (!authUser.role) {
     throw new AppError("Role user tidak ditemukan", 403);
-  }
-
-  if (authUser.role === "ADMIN") {
-    return;
   }
 
   if (authUser.role === "MENTOR" && course.mentorId === authUser.id) {
@@ -82,29 +85,7 @@ const ensureCourseManagePermission = (course: CourseRecord, authUser: AuthUser) 
   throw new AppError("Anda tidak memiliki akses ke course ini", 403);
 };
 
-const ensureMentorExists = async (mentorId: number) => {
-  const mentor = await prisma.user.findFirst({
-    where: {
-      id: mentorId,
-      deletedAt: null,
-      role: {
-        in: ["MENTOR", "ADMIN"] satisfies UserRole[],
-      },
-    },
-    select: {
-      id: true,
-    },
-  });
-
-  if (!mentor) {
-    throw new AppError("Mentor tidak ditemukan atau tidak valid", 404);
-  }
-};
-
-const resolveMentorId = async (
-  inputMentorId: number | undefined,
-  authUser: AuthUser
-) => {
+const resolveMentorId = (authUser: AuthUser) => {
   if (!authUser.role) {
     throw new AppError("Role user tidak ditemukan", 403);
   }
@@ -113,16 +94,15 @@ const resolveMentorId = async (
     return authUser.id;
   }
 
-  if (authUser.role === "ADMIN") {
-    const mentorId = inputMentorId ?? authUser.id;
-    await ensureMentorExists(mentorId);
-    return mentorId;
-  }
-
-  throw new AppError("Hanya mentor atau admin yang bisa mengelola course", 403);
+  throw new AppError(
+    "Hanya mentor yang bisa mengelola course",
+    403
+  );
 };
 
-const buildCourseFilters = (query: ListCoursesQuery): Prisma.ClassWhereInput => {
+const buildCourseFilters = (
+  query: ListCoursesQuery
+): Prisma.ClassWhereInput => {
   const filters: Prisma.ClassWhereInput[] = [activeCourseWhere];
 
   if (query.search) {
@@ -168,7 +148,7 @@ const buildCourseFilters = (query: ListCoursesQuery): Prisma.ClassWhereInput => 
 
 const courseService = {
   async create(data: CreateCourseInput, authUser: AuthUser) {
-    const mentorId = await resolveMentorId(data.mentorId, authUser);
+    const mentorId =resolveMentorId(authUser);
 
     return serializeCourse(
       await prisma.class.create({
@@ -257,24 +237,15 @@ const courseService = {
 
     const updateData: Prisma.ClassUpdateInput = {
       ...(data.title !== undefined ? { title: data.title } : {}),
-      ...(data.description !== undefined ? { description: data.description } : {}),
+      ...(data.description !== undefined
+        ? { description: data.description }
+        : {}),
       ...(data.price !== undefined ? { price: data.price } : {}),
-      ...(data.thumbnailUrl !== undefined ? { thumbnailUrl: data.thumbnailUrl } : {}),
+      ...(data.thumbnailUrl !== undefined
+        ? { thumbnailUrl: data.thumbnailUrl }
+        : {}),
       ...(data.status !== undefined ? { status: data.status } : {}),
     };
-
-    if (data.mentorId !== undefined) {
-      if (authUser.role !== "ADMIN") {
-        throw new AppError("Hanya admin yang bisa mengubah mentor course", 403);
-      }
-
-      await ensureMentorExists(data.mentorId);
-      updateData.mentor = {
-        connect: {
-          id: data.mentorId,
-        },
-      };
-    }
 
     return serializeCourse(
       await prisma.class.update({
