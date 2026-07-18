@@ -4,22 +4,7 @@ import { authenticate } from "#middlewares/auth.middlewares";
 
 const router = Router();
 
-/**
- * @openapi
- * /api/onboarding/categories:
- *   get:
- *     tags:
- *       - Onboarding
- *     summary: Get onboarding categories
- *     description: Mengambil daftar kategori yang bisa dipilih saat onboarding.
- *     responses:
- *       200:
- *         description: Daftar kategori berhasil diambil.
- */
-router.get(
-  "/categories",
-  onboardingController.getCategories
-);
+
 
 /**
  * @openapi
