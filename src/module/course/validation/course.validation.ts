@@ -11,10 +11,7 @@ export const createCourseValidation = [
     .withMessage("Title wajib diisi")
     .isLength({ max: 255 })
     .withMessage("Title maksimal 255 karakter"),
-  body("description")
-    .trim()
-    .notEmpty()
-    .withMessage("Description wajib diisi"),
+  body("description").trim().notEmpty().withMessage("Description wajib diisi"),
   body("price")
     .notEmpty()
     .withMessage("Price wajib diisi")
@@ -31,8 +28,9 @@ export const createCourseValidation = [
     .withMessage(`Status harus salah satu dari: ${classStatuses.join(", ")}`),
   body("mentorId")
     .optional()
-    .isUUID()
-    .withMessage("mentorId harus berupa UUID yang valid"),
+    .isInt()
+    .withMessage("mentorId harus berupa angka")
+    .toInt(),
 ];
 
 export const updateCourseValidation = [
@@ -66,8 +64,9 @@ export const updateCourseValidation = [
     .withMessage(`Status harus salah satu dari: ${classStatuses.join(", ")}`),
   body("mentorId")
     .optional()
-    .isUUID()
-    .withMessage("mentorId harus berupa UUID yang valid"),
+    .isInt()
+    .withMessage("mentorId harus berupa angka")
+    .toInt(),
 ];
 
 export const getCourseByIdValidation = [
@@ -86,8 +85,9 @@ export const listCoursesValidation = [
     .withMessage(`Status harus salah satu dari: ${classStatuses.join(", ")}`),
   query("mentorId")
     .optional()
-    .isUUID()
-    .withMessage("mentorId harus berupa UUID yang valid"),
+    .isInt()
+    .withMessage("mentorId harus berupa angka")
+    .toInt(),
   query("minPrice")
     .optional()
     .isFloat({ min: 0 })
@@ -117,7 +117,11 @@ export const listCoursesValidation = [
     .withMessage("limit harus berupa angka 1-100")
     .toInt(),
 ];
-
+export const getCourseModulesValidation = [
+  param("courseId")
+    .isUUID()
+    .withMessage("ID course harus berupa UUID yang valid"),
+];
 export const deleteCourseValidation = [
   param("id").isUUID().withMessage("ID course harus berupa UUID yang valid"),
 ];

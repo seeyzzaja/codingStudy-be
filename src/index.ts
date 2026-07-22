@@ -1,5 +1,5 @@
 import app from "#app";
-import config from "#utils/env";
+import config from "#config/env";
 
 app.listen(config.PORT, () => {
   console.log(`Server jalan → http://localhost:${config.PORT}`);

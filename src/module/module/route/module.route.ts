@@ -3,15 +3,16 @@ import { validateRequest } from "#middlewares/validate-request.middleware";
 import {
   createModuleValidation,
   deleteModuleValidation,
-  getModuleByIdValidation,
+  // getModuleByIdValidation,
   listModulesValidation,
   updateModuleValidation,
-} from "#validation/module.validation";
-
+} from "#module/module/validation/module.validation";
+import { authenticate } from "#middlewares/auth.middlewares";
+import { requireRole } from "#middlewares/require-role.middleware";
 import {
   create,
   getAll,
-  getById,
+  // getById,
   update,
   remove,
 } from "../controller/module.controller.js";
@@ -76,8 +77,14 @@ const router = Router();
  *       400:
  *         description: Data request tidak valid
  */
-router.post("/", createModuleValidation, validateRequest, create);
-
+router.post(
+  "/",
+  authenticate,
+  requireRole("MENTOR"),
+  createModuleValidation,
+  validateRequest,
+  create
+);
 /**
  * @swagger
  * /modules:
@@ -161,7 +168,14 @@ router.get("/", listModulesValidation, validateRequest, getAll);
  *       404:
  *         description: Module tidak ditemukan
  */
-router.get("/:id", getModuleByIdValidation, validateRequest, getById);
+router.get(
+  "/",
+  authenticate,
+  requireRole("MENTOR"),
+  listModulesValidation,
+  validateRequest,
+  getAll
+);
 
 /**
  * @swagger
@@ -217,7 +231,14 @@ router.get("/:id", getModuleByIdValidation, validateRequest, getById);
  *       404:
  *         description: Module tidak ditemukan
  */
-router.patch("/:id", updateModuleValidation, validateRequest, update);
+router.patch(
+  "/:id",
+  authenticate,
+  requireRole("MENTOR"),
+  updateModuleValidation,
+  validateRequest,
+  update
+);
 
 /**
  * @swagger
@@ -250,6 +271,13 @@ router.patch("/:id", updateModuleValidation, validateRequest, update);
  *       404:
  *         description: Module tidak ditemukan
  */
-router.delete("/:id", deleteModuleValidation, validateRequest, remove);
+router.delete(
+  "/:id",
+  authenticate,
+  requireRole("MENTOR"),
+  deleteModuleValidation,
+  validateRequest,
+  remove
+);
 
 export default router;

@@ -13,7 +13,7 @@ import type {
   LoginInput,
   RegisterInput,
   VerifyOtpInput,
-} from "#validation/auth.validation";
+} from "#module/auth/validation/auth.validation";
 const SALT_ROUNDS = 10;
 const sanitizeUser = <
   T extends {

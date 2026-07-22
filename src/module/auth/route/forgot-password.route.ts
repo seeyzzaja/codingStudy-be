@@ -8,7 +8,7 @@ import {
   forgotPasswordSchema,
   verifyForgotPasswordSchema,
   resetPasswordSchema,
-} from "#validation/auth.validation";
+} from "#module/auth/validation/auth.validation";
 
 const router = Router();
 

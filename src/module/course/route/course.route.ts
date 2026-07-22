@@ -13,8 +13,10 @@ import {
   getCourseByIdValidation,
   listCoursesValidation,
   updateCourseValidation,
-} from "#validation/course.validation";
+  getCourseModulesValidation
+} from "#module/course/validation/course.validation";
 import { requireRole } from "#middlewares/require-role.middleware";
+import { getCourseModules } from "../controller/course-module.controller.js";
 
 const router = Router();
 
@@ -81,6 +83,81 @@ const router = Router();
  */
 router.get("/", listCoursesValidation, getAllCourses);
 
+/**
+ * @openapi
+ * /api/courses/{courseId}/modules:
+ *   get:
+ *     tags:
+ *       - Courses
+ *     summary: Get modules by course
+ *     description: Mengambil daftar module dari course yang telah dibeli oleh user. User harus login dan sudah memiliki enrollment pada course tersebut.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: courseId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: ID course.
+ *     responses:
+ *       200:
+ *         description: Berhasil mengambil daftar module.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Berhasil mengambil daftar module
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         format: uuid
+ *                       classId:
+ *                         type: string
+ *                         format: uuid
+ *                       urutan:
+ *                         type: integer
+ *                         example: 1
+ *                       judul:
+ *                         type: string
+ *                         example: Pengenalan Flutter
+ *                       deskripsi:
+ *                         type: string
+ *                         example: Belajar dasar Flutter.
+ *                       videoUrl:
+ *                         type: string
+ *                         nullable: true
+ *                         example: https://example.com/flutter-intro
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                       updatedAt:
+ *                         type: string
+ *                         format: date-time
+ *       401:
+ *         description: User belum login atau token tidak valid.
+ *       403:
+ *         description: User belum membeli course.
+ *       404:
+ *         description: Course tidak ditemukan.
+ */
+router.get(
+  "/:courseId/modules",
+  authenticate,
+  getCourseModulesValidation,
+  getCourseModules
+);
 /**
  * @openapi
  * /api/courses/{id}:
