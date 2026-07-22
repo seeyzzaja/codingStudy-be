@@ -1,16 +1,24 @@
 import prisma from "#prisma";
 import { AppError } from "#utils/app-error";
 
-export const createModule = async (data: any) => {
-  const relatedClass = await prisma.class.findFirst({
-    where: {
-      id: data.classId,
-      deletedAt: null,
-    },
-    select: {
-      id: true,
-    },
-  });
+type AuthUser = {
+  id: number;
+  role?: string;
+};
+export const createModule = async (
+  data: any,
+  authUser: AuthUser
+) => {
+const relatedClass = await prisma.class.findFirst({
+  where: {
+    id: data.classId,
+    mentorId: authUser.id,
+    deletedAt: null,
+  },
+  select: {
+    id: true,
+  },
+});
 
   if (!relatedClass) {
     throw new AppError("Class tidak ditemukan", 404);
@@ -74,17 +82,22 @@ export const getModuleById = async (id: string) => {
 
 export const updateModule = async (
   id: string,
-  data: any
+  data: any,
+  authUser: AuthUser
 ) => {
-  const existingModule = await prisma.module.findFirst({
-    where: {
-      id,
-      deletedAt: null,
+ const existingModule = await prisma.module.findFirst({
+  where: {
+    id,
+    deletedAt: null,
+
+    class: {
+      mentorId: authUser.id,
     },
-    select: {
-      id: true,
-    },
-  });
+  },
+  select: {
+    id: true,
+  },
+});
 
   if (!existingModule) {
     throw new AppError("Module tidak ditemukan", 404);
@@ -99,16 +112,23 @@ export const updateModule = async (
   });
 };
 
-export const deleteModule = async (id: string) => {
-  const existingModule = await prisma.module.findFirst({
-    where: {
-      id,
-      deletedAt: null,
+export const deleteModule = async (
+  id: string,
+  authUser: AuthUser
+) => {
+const existingModule = await prisma.module.findFirst({
+  where: {
+    id,
+    deletedAt: null,
+
+    class: {
+      mentorId: authUser.id,
     },
-    select: {
-      id: true,
-    },
-  });
+  },
+  select: {
+    id: true,
+  },
+});
 
   if (!existingModule) {
     throw new AppError("Module tidak ditemukan", 404);

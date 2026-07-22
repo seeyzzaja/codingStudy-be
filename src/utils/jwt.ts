@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import config from "#utils/env";
+import config from "#config/env";
 
 type AccessTokenPayload = {
   id: number;

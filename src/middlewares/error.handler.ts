@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { errorResponse } from "#utils/response";
 import type { NextFunction, Request, Response } from "express";
-import config from "#utils/env";
+import config from "#config/env";
 import { AppError } from "#utils/app-error";
 
 export const errorHandler = (

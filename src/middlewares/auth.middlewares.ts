@@ -2,7 +2,7 @@ import { errorResponse } from "#utils/response";
 import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import type { JwtPayload } from "jsonwebtoken";
-import config from "#utils/env";
+import config from "#config/env";
 
 export const authenticate = (
   req: Request,

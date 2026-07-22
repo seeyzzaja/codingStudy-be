@@ -1,0 +1,19 @@
+model Enrollment {
+  id String @id @default(uuid()) @db.Uuid
+
+  userId  Int    @map("user_id")
+  classId String @map("class_id") @db.Uuid
+
+  paymentId String? @unique @map("payment_id") @db.Uuid
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  class   Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  payment Payment? @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, classId])
+  @@index([userId])
+  @@index([classId])
+  @@map("enrollments")
+}

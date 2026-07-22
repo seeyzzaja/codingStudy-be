@@ -7,7 +7,7 @@ import type {
   ForgotPasswordInput,
   VerifyForgotPasswordInput,
   ResetPasswordInput,
-} from "#validation/auth.validation";
+} from "#module/auth/validation/auth.validation";
 import {
   renderForgotPasswordOtpEmail,
 } from "#module/email/email.template";

@@ -7,7 +7,7 @@ import {
   deleteCategoryValidation,
   getCategoryByIdValidation,
   listCategoriesValidation,
-} from "#validation/category.validation";
+} from "#module/category/validation/category.validation";
 
 import {
   create,
