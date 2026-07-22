@@ -11,11 +11,14 @@ import userRouter from "#module/user/route/user.route";
 import authRouter from "#module/auth/route/auth.route";
 import courseRouter from "#module/course/route/course.route";
 import { errorHandler } from "#middlewares/error.handler";
-import swaggerUi from 'swagger-ui-express';
-import swaggerSpec from "./utils/swagger.js";
-import onboardingRoute from"#module/onboarding/route/onboarding.route";
+import swaggerUi from "swagger-ui-express";
+import swaggerSpec from "./config/swagger.js";
+import onboardingRoute from "#module/onboarding/route/onboarding.route";
 import moduleRoute from "#module/module/route/module.route";
-
+import categoryRoute from "#module/category/route/category.route";
+import forgotPasswordRoute from "#module/auth/route/forgot-password.route";
+import paymentRoute from "#module/payment/route/payment.route";
+import myCourseRoute from "#module/my-course/route/my-course.route";
 const app = express();
 
 // app.get("/", (_req, _res) => {
@@ -39,14 +42,12 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
   next();
 });
 
-
 app.get("/", (req: Request, res: Response) => {
   const processTime = Date.now() - (req.startTime ?? Date.now());
   successResponse(
     res,
     "Selamat datang",
     {
-     
       status: "Server hidup!",
       waktu_proses: `${processTime} ms`,
     },
@@ -57,13 +58,15 @@ app.get("/", (req: Request, res: Response) => {
 
 app.use("/api/users", userRouter);
 app.use("/api/auth", authRouter);
+app.use("/api/auth", forgotPasswordRoute);
 app.use("/auth", authRouter);
+app.use("/auth", forgotPasswordRoute);
 app.use("/api/courses", courseRouter);
 app.use("/modules", moduleRoute);
-app.use(
-  "/api/onboarding",
-  onboardingRoute
-);
+app.use("/api/onboarding", onboardingRoute);
+app.use("/api/categories", categoryRoute);
+app.use("/api/payments", paymentRoute);
+app.use("/api/my-courses", myCourseRoute);
 app.use(express.static("./"));
 
 app.use((req: Request, _res: Response, next: NextFunction) => {

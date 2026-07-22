@@ -1,215 +1,198 @@
 # 📄 System Requirements Specification (SRS)
+
 **Nama Proyek:** Coding Study  
-**Versi Dokumen:** 1.0.0  
-**Tanggal:** April 2026  
+**Versi Dokumen:** 1.3.0 (Updated with Frontend & Tech Stack specifics)  
+**Tanggal:** July 2026
 
 ---
 
 ## 1. Pendahuluan (Introduction)
 
 ### 1.1 Tujuan (Purpose)
+
 Dokumen System Requirements Specification (SRS) ini merinci kebutuhan fungsional dan non-fungsional untuk **Coding Study**. Platform ini dirancang untuk menyediakan lingkungan belajar yang interaktif dan fleksibel bagi pengguna, memungkinkan mereka untuk mengakses materi pembelajaran pemrograman dan teknologi kapan saja dan di mana saja.
 
 ### 1.2 Target Pembaca (Intended Audience)
+
 Dokumen ini ditujukan untuk digunakan oleh:
-* **Tim Developer:** Sebagai panduan dalam implementasi teknis (Frontend, Backend, dan Database) serta arsitektur sistem.
-* **Stakeholder & Product Owner:** Untuk memastikan bahwa kebutuhan bisnis dan ruang lingkup proyek MVP sejalan dengan ekspektasi mereka.
-* **Quality Assurance (QA):** Sebagai dasar untuk menentukan kriteria penerimaan (acceptance criteria) dan skenario pengujian fungsionalitas.
+
+- **Tim Developer:** Sebagai panduan dalam implementasi teknis (Frontend, Backend, dan Database) serta arsitektur sistem.
+- **Stakeholder & Product Owner:** Untuk memastikan bahwa kebutuhan bisnis dan ruang lingkup proyek MVP sejalan dengan ekspektasi mereka.
+- **Quality Assurance (QA):** Sebagai dasar untuk menentukan kriteria penerimaan (acceptance criteria) dan skenario pengujian fungsionalitas.
 
 ### 1.3 Ruang Lingkup Produk (Product Scope)
-**Coding Study** adalah platform *e-learning* yang menghubungkan praktisi atau ahli (Mentor) dengan pembelajar (Student). Fungsionalitas inti pada fase Minimum Viable Product (MVP) ini meliputi:
-* Registrasi dan autentikasi berbasis email dan OAuth (Google/GitHub).
-* Katalog kelas dengan fitur pencarian dan filter (berdasarkan bahasa pemrograman, tingkat kesulitan, dll).
-* Proses *checkout* dan pembayaran digital yang terintegrasi (Payment Gateway).
-* *Dashboard* belajar siswa yang mendukung pemutaran video tertanam (*embedded video*).
-* Portal Mentor untuk manajemen kelas dasar (CRUD informasi kelas dan kurikulum).
 
-**Target Utama:** Individu yang ingin mempelajari keterampilan *coding* dan teknologi secara *on-demand*.
+**Coding Study** adalah platform _e-learning_ yang menghubungkan praktisi atau ahli (Mentor) dengan pembelajar (Student). Fungsionalitas inti pada fase Minimum Viable Product (MVP) ini meliputi:
+
+- Registrasi dan autentikasi berbasis email dan password.
+- Pemulihan kata sandi (Forgot Password) berbasis OTP via Email.
+- Onboarding pengguna untuk memilih kategori minat pembelajaran.
+- Katalog kelas dengan fitur pencarian dan filter (berdasarkan kategori, mentor, harga, tingkat kesulitan, dll).
+- Proses _checkout_ dan pembayaran digital yang terintegrasi (Payment Gateway).
+- _Dashboard_ belajar siswa yang mendukung pemutaran video tertanam (_embedded video_).
+- Portal Mentor untuk manajemen kelas dan modul pembelajaran.
+
+**Target Utama:** Individu yang ingin mempelajari keterampilan _coding_ dan teknologi secara _on-demand_.
 
 ### 1.4 Definisi & Terminologi
-* **Student:** Pengguna akhir yang mendaftar, membeli kelas, dan mengakses modul pembelajaran.
-* **Mentor:** Kreator konten yang memiliki akses untuk membuat kelas, menyusun kurikulum, dan memantau performa penjualan kelasnya.
-* **Admin:** Pengelola sistem yang bertugas menyetujui kelas baru, memoderasi pengguna, dan menangani komplain atau sengketa (*dispute*).
-* **Checkout:** Proses transaksional di mana Student melakukan pembelian akses ke sebuah kelas.
-* **MVP:** Minimum Viable Product (Versi rilis dengan fitur fundamental yang siap digunakan pengguna awal).
-* **JWT:** JSON Web Token, standar industri untuk mengamankan pertukaran data autentikasi.
+
+- **Student:** Pengguna akhir yang mendaftar, membeli kelas, dan mengakses modul pembelajaran.
+- **Mentor:** Kreator konten yang memiliki akses untuk membuat kelas, menyusun kurikulum, dan memantau performa penjualan kelasnya.
+- **Admin:** Pengelola sistem yang bertugas menyetujui kelas baru, memoderasi pengguna, dan menangani komplain atau sengketa (_dispute_).
+- **RBAC:** Role-Based Access Control, metode pembatasan akses berdasarkan peran pengguna.
+- **OTP:** One-Time Password, kata sandi sekali pakai untuk keamanan tambahan.
+- **JWT:** JSON Web Token, standar industri untuk mengamankan pertukaran data autentikasi.
 
 ---
 
 ## 2. Deskripsi Umum (Overall Description)
 
 ### 2.1 Perspektif Produk (Product Perspective)
-Sistem **Coding Study** dibangun sebagai aplikasi web modern (Single Page Application/SSR) yang responsif dan dirancang dengan pendekatan *Mobile-First*. Untuk mempercepat peluncuran MVP, sistem ini akan menggunakan layanan pihak ketiga (*Managed Services*) untuk operasi yang kompleks:
-* **Video Hosting:** YouTube (Unlisted) atau Vimeo untuk menghemat biaya *bandwidth* dan infrastruktur streaming.
-* **Payment Gateway:** Midtrans atau Xendit untuk memproses transaksi bank transfer, *e-wallet*, dan *Virtual Account* secara otomatis.
-* **Asset Storage:** Cloudinary atau AWS S3 untuk penyimpanan aset statis (foto profil, *thumbnail* kelas, modul PDF).
-* **Authentication:** NextAuth.js / Supabase Auth / implementasi JWT manual.
+
+Sistem **Coding Study** dibangun sebagai aplikasi berbasis RESTful API di sisi backend (Node.js/Express) dan dapat dikonsumsi oleh berbagai platform client (Web/Mobile). Aplikasi ini dipaketkan menggunakan container (Docker) untuk konsistensi lingkungan deployment.
 
 ### 2.2 Fungsi Produk (Product Functions)
+
 Platform ini memfasilitasi alur kerja (workflow) utama berikut:
-1. **Autentikasi Pengguna:** Pendaftaran, login, pemulihan kata sandi (*forgot password*), dan manajemen sesi menggunakan JWT.
-2. **Eksplorasi Kelas:** Pencarian kelas berdasarkan *keyword*, kategori, dan pengurutan (*sorting*) harga/rating.
-3. **Pembelian & Checkout:** Proses transaksi satu pintu yang aman dengan konfirmasi akses seketika (*instant access*) pasca pembayaran.
-4. **Pengalaman Belajar:** Antarmuka pemutar video yang melacak progres belajar (*completed/uncompleted modules*).
-5. **Manajemen Konten:** Formulir bagi Mentor untuk mengatur detail kelas, membuat silabus/modul, dan menautkan URL video.
-6. **Sistem Ulasan (Review):** Penilaian berbasis bintang (1-5) dan ulasan teks yang hanya dapat diberikan oleh Student yang telah memiliki kelas.
+
+1. **Autentikasi Pengguna:** Pendaftaran, login, lupa kata sandi dengan OTP, dan manajemen sesi.
+2. **Onboarding:** Personalisasi pengalaman belajar dengan mengumpulkan preferensi minat kategori.
+3. **Eksplorasi Kelas:** Pencarian kelas berdasarkan _keyword_, kategori, dan pengurutan (_sorting_) harga.
+4. **Pembelian & Checkout:** Proses transaksi satu pintu yang aman dengan konfirmasi akses seketika (_instant access_) pasca pembayaran.
+5. **Pengalaman Belajar:** Antarmuka pemutar video yang melacak progres belajar.
+6. **Manajemen Konten:** Formulir bagi Mentor untuk mengatur detail kelas, membuat modul, dan menautkan URL video.
+7. **Sistem Ulasan (Review):** Penilaian berbasis bintang (1-5) dan ulasan teks yang hanya dapat diberikan oleh Student yang telah memiliki kelas.
 
 ### 2.3 Kelas dan Peran Pengguna (User Classes and Roles)
 
-| Peran | Hak Akses Utama |
-| :--- | :--- |
-| **Student** | Mengelola profil, mencari kelas, *checkout* pembayaran, mengakses modul belajar, memberikan ulasan, melacak *progress* belajar. |
-| **Mentor** | Dasbor metrik penjualan dasar, manajemen profil mentor, CRUD (Create, Read, Update, Delete) data kelas dan modul pembelajaran. |
-| **Admin** | Dasbor operasional: Manajemen pengguna (suspend/ban), verifikasi *payout* mentor, dan melihat laporan seluruh transaksi. |
+| Peran       | Hak Akses Utama                                                                                                                 |
+| :---------- | :------------------------------------------------------------------------------------------------------------------------------ |
+| **Student** | Mengelola profil, mencari kelas, _checkout_ pembayaran, mengakses modul belajar, memberikan ulasan, melacak _progress_ belajar. |
+| **Mentor**  | Dasbor metrik penjualan dasar, manajemen profil mentor, CRUD (Create, Read, Update, Delete) data kelas dan modul pembelajaran.  |
+| **Admin**   | Dasbor operasional: Manajemen pengguna (suspend/ban), verifikasi _payout_ mentor, dan melihat laporan seluruh transaksi.        |
 
 ### 2.4 Lingkungan Operasi (Operating Environment)
-* **Frontend:** Browser web modern yang mendukung ES6+ (Chrome, Safari, Firefox, Edge). Dioptimalkan untuk resolusi mulai dari 360px (Mobile) hingga 1920px (Desktop).
-* **Backend:** Environment Node.js (v18/v20) pada sistem operasi berbasis Linux (Ubuntu/Alpine).
-* **Database:** PostgreSQL versi 14 atau lebih baru.
 
-### 2.5 Batasan Desain & Implementasi (Constraints)
-* **Tenggat Waktu:** ~3 bulan untuk rilis MVP.
-* **Arsitektur:** Menggunakan arsitektur *Monolithic* (Backend tunggal) untuk menekan kompleksitas awal, dengan potensi pemisahan *microservices* di masa depan. *Frontend* dipisah (*decoupled*) dari *Backend* (RESTful API).
-* **Efisiensi Biaya:** Memanfaatkan infrastruktur *Cloud Serverless* (Vercel/Netlify) untuk *Frontend* dan layanan PaaS (Railway/Render) atau VPS dasar untuk *Backend* dan Database.
-
-### 2.6 Asumsi dan Ketergantungan (Assumptions and Dependencies)
-* Ekosistem Node.js/TypeScript digunakan di seluruh *stack* untuk memudahkan pertukaran data (*Fullstack TypeScript*).
-* Keandalan platform sangat bergantung pada *uptime* API pihak ketiga (Payment Gateway, Video Hosting).
+- **Frontend:** Browser web modern yang mendukung ES6+. Menggunakan framework React/Next.js dengan _styling_ Tailwind CSS dan _state management_ seperti Zustand atau Redux.
+- **Backend:** Environment Node.js dengan framework Express.js dan TypeScript. Dibungkus dalam Docker Container.
+- **Database:** PostgreSQL diakses menggunakan Prisma ORM.
 
 ---
 
 ## 3. Fitur Sistem (System Features)
 
 ### 3.1 Autentikasi dan Manajemen Sesi
-* **Deskripsi:** Modul untuk mengamankan akses aplikasi dan membedakan *role* (Student/Mentor/Admin).
-* **Alur Utama:**
-  1. Pengguna memasukkan kredensial email/password atau login via OAuth (Google).
-  2. *Backend* memvalidasi dan mengembalikan JWT (Access Token & Refresh Token) ke *Frontend*.
-  3. *Frontend* menyimpan token secara aman (misalnya via `httpOnly cookies` atau *in-memory*).
-* **Keamanan:** Menerapkan proses *hashing* (bcrypt/Argon2) untuk penyimpanan kata sandi.
 
-### 3.2 Katalog dan Pencarian Kelas
-* **Deskripsi:** Halaman *discovery* untuk menampilkan daftar kelas.
-* **Alur Utama:**
-  1. *Frontend* meminta data kelas melalui REST API secara *paginated* (misalnya 12 item per halaman).
-  2. Pengguna menerapkan filter (misal: "Web Development", "Pemula", "Gratis/Berbayar").
-  3. *Backend* melakukan *query filtering* pada database PostgreSQL dan mengembalikan *response* berformat JSON.
+- **Deskripsi:** Modul untuk mengamankan akses aplikasi dan membedakan _role_.
+- **Alur Utama Frontend:** Antarmuka Login, Register, dan Reset Password.
+- **Alur Utama Backend:** Validasi kredensial, issue JWT/Refresh Token (disimpan di tabel `sessions`), verifikasi OTP, hashing bcrypt.
 
-### 3.3 Sistem Transaksi (Checkout)
-* **Deskripsi:** Memfasilitasi perolehan (pembelian) kelas.
-* **Alur Utama:**
-  1. Student menekan tombol "Beli Kelas", sistem membuat rekam jejak pesanan (*order/invoice*) berstatus `PENDING` di database.
-  2. Sistem memanggil API Xendit/Midtrans untuk membuat halaman pembayaran (*Payment Link/Invoice*).
-  3. Setelah Student membayar, *Payment Gateway* mengirimkan *Webhook Callback* ke *Backend* **Coding Study**.
-  4. *Backend* memvalidasi *signature callback*, mengubah status menjadi `PAID`, dan memberikan akses kelas kepada Student secara otomatis.
+### 3.2 Role-Based Access Control (RBAC)
 
-### 3.4 Dasbor Belajar (Learning Experience)
-* **Prasyarat:** Akses kelas harus berstatus kepemilikan valid.
-* **Alur Utama:**
-  1. Student memilih materi dari daftar silabus/modul di *sidebar*.
-  2. Halaman menampilkan pemutar video (YouTube Iframe API / React Player).
-  3. Student dapat menekan tombol "Selesai" pada modul untuk memperbarui *progress bar* belajar (disimpan di database).
+- **Deskripsi:** Memastikan setiap pengguna hanya dapat mengakses _resources_ yang menjadi haknya.
+- **Implementasi Frontend:** _Protected Routes_ di sisi client, menyembunyikan navigasi atau tombol spesifik jika tidak sesuai role.
+- **Implementasi Backend:** Penggunaan _guard middleware_ di rute Express untuk membatasi endpoint tertentu.
 
-### 3.5 Manajemen Kelas (Mentor Dashboard)
-* **Deskripsi:** Modul CMS (Content Management System) internal bagi Mentor.
-* **Alur Utama:**
-  1. Mentor membuat *draft* kelas baru (Judul, Harga, Deskripsi, Thumbnail). Thumbnail diunggah ke Cloudinary/S3.
-  2. Mentor menyusun modul dan menambahkan tautan video YouTube (*Unlisted*).
-  3. Setelah selesai, Mentor mengubah status kelas menjadi `PUBLISHED` agar muncul di katalog publik.
+### 3.3 Email Sender
+
+- **Deskripsi:** Layanan pengiriman notifikasi via email secara otomatis. (OTP Lupa Password, Invoice, Notifikasi).
+
+### 3.4 Onboarding dan Minat Pengguna
+
+- **Deskripsi:** Halaman pilihan visual (_pills/cards_) minat setelah registrasi pertama.
+- **Alur Utama:** Student memilih UI kategori minat -> API `/api/onboarding/complete` menyimpan data ke `UserPreference`.
+
+### 3.5 Katalog dan Pencarian Kelas (Discovery)
+
+- **Deskripsi:** Halaman pencarian utama Frontend (berisi _Grid Cards_ kelas) dan _Sidebar filter_.
+- **Fungsi Filter:** Search bar, Filter Kategori, Filter Harga, Sorting (Terbaru, Termurah, dsb).
+
+### 3.6 Manajemen Kelas dan Modul (Mentor Dashboard)
+
+- **Deskripsi:** Dasbor internal Mentor.
+- **Fungsi UI:** Form pembuatan kelas, _drag-and-drop_ list modul pembelajaran, pengaturan _Thumbnail_ dan Video URL.
+
+### 3.7 Sistem Transaksi (Checkout) _(To Be Implemented)_
+
+- **Deskripsi:** Memfasilitasi pembelian kelas dengan integrasi UI Checkout (Ringkasan Pembayaran) dan modul API Payment Gateway (Webhook).
+
+### 3.8 Dasbor Belajar (Learning Experience) _(To Be Implemented)_
+
+- **Deskripsi:** Antarmuka "Kelas Saya" dengan _Video Player_ di tengah dan _Sidebar_ navigasi daftar materi kursus yang memuat indikator (centang) _Progress Bar_.
 
 ---
 
 ## 4. Kebutuhan Antarmuka Eksternal (External Interface Requirements)
 
-### 4.1 Antarmuka Pengguna (UI/UX)
-* **Desain:** Dibangun menggunakan *component library* modern (Tailwind CSS / Material UI / Chakra UI) untuk konsistensi dan kecepatan *development*.
-* **Responsivitas:** Wajib mendukung tampilan *Mobile* (320px - 480px), *Tablet* (768px - 1024px), dan *Desktop* (1024px+).
+### 4.1 Antarmuka Pengguna (UI/UX Frontend)
+
+- Menggunakan pendekatan _Mobile-First Design_ agar responsif di seluruh layar gawai.
+- **Komponen:** Penggunaan standard _Component Library_ (seperti shadcn/ui atau Chakra UI) untuk konsistensi desain form, modal, dan notifikasi (toast).
+- **Integrasi API:** Penggunaan Axios/Fetch dengan interceptor otomatis untuk menangani status `401 Unauthorized` dan memperbarui sesi JWT di background.
 
 ### 4.2 Antarmuka Perangkat Lunak (APIs & Integrations)
-* **RESTful API:** *Backend* akan mengekspos API dengan respons berformat JSON. Dokumentasi API akan menggunakan **Swagger/OpenAPI**.
-* **Storage Provider:** Integrasi SDK Cloudinary atau AWS S3 via *Backend* untuk mengamankan proses unggah gambar (*presigned URLs* atau validasi *server-side*).
 
-### 4.3 Antarmuka Komunikasi
-* **Protokol:** Seluruh komunikasi *Client-Server* dan *Server-to-Server* (Webhook) harus melalui **HTTPS (TLS 1.2+)**.
-* **CORS (Cross-Origin Resource Sharing):** *Backend* hanya akan menerima *request* dari *domain Frontend* yang telah didaftarkan (*whitelisted*).
+- **RESTful API:** Semua endpoint mengembalikan respons terstandarisasi JSON.
+- **OpenAPI/Swagger:** Terdokumentasi interaktif di `/api-docs`.
+- **Mail Service:** Terintegrasi SMTP/SendGrid.
 
 ---
 
 ## 5. Kebutuhan Non-Fungsional (Non-Functional Requirements)
 
-### 5.1 Performa (Performance)
-* **Waktu Muat (Page Load):** *First Contentful Paint* (FCP) halaman utama harus `< 1.5 detik` pada koneksi 4G standar.
-* **Response Time API:** Target rata-rata respons *Backend* untuk operasi *read* (membaca data) adalah `< 200ms`.
+### 5.1 Keamanan Aplikasi (Security)
 
-### 5.2 Keamanan Aplikasi (Security)
-* **Rate Limiting:** Mengimplementasikan batasan jumlah *request* (misalnya 100 request/menit per IP) pada *endpoint* krusial seperti Login/Register untuk mencegah serangan *Brute Force*.
-* **Data Sanitization:** Mencegah serangan SQL Injection dan XSS (Cross-Site Scripting) dengan menggunakan ORM (seperti Prisma/TypeORM/Sequelize) dan *library validator* (Zod/Joi).
+- **Data Sanitization & Validation:** `express-validator` di sisi BE, dan `react-hook-form` + `zod` di sisi FE.
+- **Helmet:** Menerapkan _security headers_ dasar.
 
-### 5.3 Logging dan Monitoring
-* **Aplikasi:** Penggunaan Winston atau Pino di Node.js untuk logging tersetruktur.
-* **Error Tracking:** Mengintegrasikan platform pemantauan seperti **Sentry** (opsional pada fase MVP) untuk melacak *bug* secara *real-time* di lingkungan *Production*.
+### 5.2 Logging dan Monitoring
+
+- **Aplikasi:** Penggunaan middleware `morgan` untuk logging permintaan HTTP.
+
+### 5.3 CI/CD dan Containerization
+
+- **Docker Containerization:** Aplikasi (FE & BE) dibungkus _Docker Image_ (`Dockerfile`, `docker-compose`).
+- **GitHub Workflow (CI/CD):** Pipeline _GitHub Actions_ mengeksekusi _Linting_, _Type Checking_, dan _Build_.
 
 ---
 
 ## 6. Kebutuhan Data (Data Requirements)
 
 ### 6.1 Model Data Logis (Logical Data Model)
-Struktur *database* relasional akan mencakup setidaknya tabel-tabel berikut:
-* `Users` (id, nama, email, password_hash, role, created_at)
-* `Classes` (id, mentor_id, judul, deskripsi, harga, thumbnail_url, status)
-* `Modules` (id, class_id, urutan, judul, video_url)
-* `Transactions` (id, student_id, class_id, amount, status [PENDING/PAID/FAILED], payment_method, updated_at)
-* `User_Classes` (student_id, class_id, progress_percentage) - Tabel pivot untuk kepemilikan kelas.
-* `Reviews` (id, class_id, student_id, rating, komentar)
+Berdasarkan implementasi _Prisma Schema_, struktur database terbagi menjadi tabel-tabel utama sebagai berikut:
+
+- **Tabel Terimplementasi (Saat Ini):**
+  - `user`: (id, name, email, password, role_id, onboardingCompleted, timestamps).
+  - `sessions`: (id, user_id, token_hash, revoked, timestamps).
+  - `classes`: (id, mentor_id, category_id, judul, deskripsi, harga, thumbnail_url, status [DRAFT/PUBLISHED], timestamps).
+  - `modules`: (id, classId, urutan, judul, deskripsi, videoUrl, timestamps).
+  - `Category`: (id, name, description, timestamps).
+  - `UserPreference`: (id, userId, categoryId, timestamps).
+
+- **Tabel Terencana (Fase Berikutnya):**
+  - `roles`: (id, name, description, timestamps).
+  - `permissions`: (id, name, description, timestamps).
+  - `role_permissions`: (role_id, permission_id).
+  - `otp_requests` (Lupa Password): (id, email, otp_code, expires_at, is_used).
+  - `Transactions`: (id, student_id, class_id, amount, status, payment_method, updated_at).
+  - `User_Classes` (Kepemilikan Kelas): (student_id, class_id, progress_percentage).
+  - `Reviews`: (id, class_id, student_id, rating, komentar).
 
 ### 6.2 Integritas Data
-* Menggunakan *Foreign Keys* (FK) dengan aturan `ON DELETE RESTRICT` atau `CASCADE` yang dikonfigurasi dengan hati-hati untuk mencegah data menjadi *orphan* (yatim).
-* Menggunakan *Database Transactions* (ACID) pada operasi yang melibatkan mutasi beberapa tabel sekaligus (misal: memproses *webhook* pembayaran).
+- Model basis data dipecah secara modular dalam file `.prisma` terpisah (contoh: `user.prisma`, `course.prisma`, `module.prisma`) dan digabung saat proses generasi (_Prisma schema splitting_).
+- Menjaga relasi dan konstrain _Foreign Key_ dengan aturan `ON DELETE CASCADE` untuk data terkait langsung seperti `sessions` dan `UserPreference`, atau `RESTRICT/SET NULL` pada data transaksional/kategorikal.
 
 ---
 
-## 7. Quality Assurance & Kriteria Penerimaan
+## 7. Arsitektur Sistem (System Architecture)
 
-* **Pengujian MVP:**
-  * **Unit Testing:** Difokuskan pada fungsi bisnis kritis (kalkulasi harga, validasi token, *webhook handler*) menggunakan Jest/Vitest.
-  * **Manual Testing:** *End-to-End* (E2E) testing skenario "Happy Path" di lingkungan Staging sebelum rilis ke Production.
-
----
-
-## 8. Strategi Deployment dan DevOps
-
-### 8.1 Lingkungan Infrastruktur (Environments)
-1. **Local:** Komputer masing-masing *developer* (menggunakan Docker *compose* untuk database lokal).
-2. **Staging:** Lingkungan mirip *production* untuk pengujian integrasi penuh (menggunakan Sandbox API dari *Payment Gateway*).
-3. **Production:** Lingkungan berhadapan langsung dengan pengguna.
-
-### 8.2 Arsitektur Deployment (MVP Tech Stack)
-* **Frontend:** Di-*deploy* ke **Vercel** atau **Netlify** yang memiliki fitur CI/CD bawaan dan CDN (*Content Delivery Network*) global.
-* **Backend:** Di-*deploy* menggunakan kontainer (Docker) ke platform PaaS seperti **Railway**, **Render**, atau VPS (DigitalOcean Droplets dengan PM2/Docker).
-* **Database:** Managed Database PostgreSQL dari Supabase, Neon, atau Railway untuk memudahkan pencadangan data (*backup* otomatis).
-* **CI/CD Pipeline:** Menggunakan **GitHub Actions** untuk menjalankan _linter_ (ESLint), _type checking_ (TypeScript), dan _unit test_ secara otomatis setiap ada *Pull Request*.
+- **Pola Arsitektur:** Client-Server Architecture via REST API.
+- **Backend:** Express.js Layered Architecture, Prisma ORM PostgreSQL.
+- **Frontend:** React/Next.js (App Router/Pages), TailwindCSS.
 
 ---
 
-## 9. Arsitektur Sistem (System Architecture)
+## 8. Peningkatan di Masa Depan (Post-MVP Roadmap)
 
-* **Pola Arsitektur:** Client-Server Architecture via REST API.
-* **Design Pattern Backend:** Pola *MVC (Model-View-Controller)* atau *Layered Architecture* (Controller, Service, Repository) untuk memisahkan logika bisnis dari lapisan *routing* HTTP.
-* **ORM:** Prisma atau TypeORM untuk abstraksi kueri database (*Type-Safe Database Access*).
-
----
-
-## 10. Risiko yang Diketahui & Mitigasi (Known Risks & Mitigation)
-
-| Risiko Teknis (Risk) | Probabilitas | Strategi Mitigasi (Mitigation Strategy) |
-| :--- | :--- | :--- |
-| **Kegagalan Pemrosesan Webhook** | Sedang | *Backend* harus merespons `200 OK` dengan cepat ke *Payment Gateway* dan memiliki mekanisme pengecekan ulang (*Cron Job*) untuk status pesanan `PENDING` yang kadaluarsa. |
-| **Pencurian Konten Video** | Tinggi | Jika menggunakan YouTube Unlisted, URL masih bisa dibagikan. Untuk MVP risiko ini **diterima**. Ke depan (Post-MVP), migrasi ke *video hosting* dengan DRM (seperti AWS MediaLive / Mux) atau metode HLS (HTTP Live Streaming) + JWT *signed URL*. |
-| **Downtime Layanan Pihak Ketiga** | Rendah | Menggunakan *Circuit Breaker* (opsional) atau *Error Handling* yang rapi agar sistem tidak *crash* sepenuhnya jika layanan eksternal bermasalah. |
-
----
-
-## 11. Peningkatan di Masa Depan (Post-MVP Roadmap)
-* Penggantian YouTube dengan server *streaming* khusus berbasis HLS (HTTP Live Streaming) untuk mempersulit pembajakan.
-* Implementasi Redis untuk *Caching* respons API kelas/katalog demi meningkatkan performa secara masif.
-* Fitur *Real-time Chat* atau forum diskusi antar siswa dan mentor di dalam platform menggunakan WebSockets (Socket.io).
+- Implementasi integrasi Payment Gateway penuh.
+- Fitur _Real-time Chat_ antar siswa dan mentor via WebSockets.

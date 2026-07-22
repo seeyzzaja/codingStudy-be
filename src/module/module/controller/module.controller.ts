@@ -12,7 +12,11 @@ import {
 } from "../service/module.service.js";
 
 export const create = asyncHandler(async (req: Request, res: Response) => {
-  const result = await createModule(req.body);
+  if (!req.user) {
+    throw new AppError("User tidak terautentikasi", 401);
+  }
+
+  const result = await createModule(req.body, req.user);
 
   return successResponse(res, "Module berhasil dibuat", result, null, 201);
 });
@@ -53,7 +57,11 @@ export const update = asyncHandler(async (req: Request, res: Response) => {
     throw new AppError("ID module wajib diisi", 400);
   }
 
-  const result = await updateModule(id, req.body);
+  if (!req.user) {
+    throw new AppError("User tidak terautentikasi", 401);
+  }
+
+  const result = await updateModule(id, req.body, req.user);
 
   return successResponse(res, "Module berhasil diperbarui", result);
 });
@@ -65,7 +73,14 @@ export const remove = asyncHandler(async (req: Request, res: Response) => {
     throw new AppError("ID module wajib diisi", 400);
   }
 
-  await deleteModule(id);
+if (!req.user) {
+  throw new AppError("User tidak terautentikasi", 401);
+}
+
+await deleteModule(
+  id,
+  req.user
+);
 
   return successResponse(res, "Module berhasil dihapus", null);
 });

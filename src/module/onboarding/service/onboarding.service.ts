@@ -1,10 +1,6 @@
 import { onboardingRepository } from "../onboarding.repository.js";
 
 export const onboardingService = {
-  async getCategories() {
-    return onboardingRepository.getCategories();
-  },
-
   async completeOnboarding(
     userId: number,
     categoryIds: string[]

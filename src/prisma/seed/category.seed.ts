@@ -1,56 +1,41 @@
-import prisma from '#utils/prisma'
+import prisma from "#utils/prisma";
 
-async function main() {
-  const categories = [
-    {
-      name: 'JavaScript',
-      description: 'Bahasa pemrograman untuk membangun website interaktif dan aplikasi web modern.'
-    },
-    {
-      name: 'TypeScript',
-      description: 'JavaScript dengan static typing untuk aplikasi yang lebih aman dan scalable.'
-    },
-    {
-      name: 'Python',
-      description: 'Bahasa pemrograman serbaguna untuk web, AI, data science, dan automation.'
-    },
-    {
-      name: 'Go',
-      description: 'Bahasa pemrograman cepat untuk backend, microservices, dan cloud computing.'
-    },
-    {
-      name: 'Java',
-      description: 'Bahasa pemrograman populer untuk backend enterprise dan Android.'
-    },
-    {
-      name: 'Kotlin',
-      description: 'Bahasa modern untuk Android dan backend yang kompatibel dengan Java.'
-    },
-    {
-      name: 'Dart',
-      description: 'Bahasa pemrograman yang digunakan bersama Flutter untuk aplikasi multiplatform.'
-    },
-    {
-      name: 'SQL',
-      description: 'Bahasa query untuk mengelola dan mengambil data dari database.'
-    }
-  ]
+const categories = [
+  {
+    name: "Backend",
+    description: "Belajar Backend Development",
+  },
+  {
+    name: "Frontend",
+    description: "Belajar Frontend Development",
+  },
+  {
+    name: "Mobile",
+    description: "Belajar Mobile Development",
+  },
+];
+
+export async function seedCategory() {
+  const result = [];
 
   for (const category of categories) {
-    await prisma.category.upsert({
+    const data = await prisma.category.upsert({
       where: {
-        name: category.name
+        name: category.name,
       },
-      update: {},
-      create: category
-    })
+
+      update: {
+        description: category.description,
+        deletedAt: null,
+      },
+
+      create: category,
+    });
+
+    result.push(data);
   }
 
-  console.log('✅ Category seed completed')
-}
+  console.log("Category berhasil dibuat");
 
-main()
-  .catch(console.error)
-  .finally(async () => {
-    await prisma.$disconnect()
-  })
+  return result;
+}
