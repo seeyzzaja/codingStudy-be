@@ -21,9 +21,7 @@ import paymentRoute from "#module/payment/route/payment.route";
 import myCourseRoute from "#module/my-course/route/my-course.route";
 const app = express();
 
-// app.get("/", (_req, _res) => {
-//   //   res.redirect("/api-docs");
-// });
+
 
 app.use(
   helmet({
