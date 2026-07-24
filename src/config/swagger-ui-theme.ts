@@ -230,6 +230,39 @@ const swaggerUiOptions = {
       background: linear-gradient(180deg, rgba(12, 20, 38, 0.98), rgba(9, 16, 30, 0.98)) !important;
     }
 
+    body[data-theme="dark"] .swagger-ui .responses-wrapper,
+    body[data-theme="dark"] .swagger-ui .responses-inner,
+    body[data-theme="dark"] .swagger-ui .response {
+      background: rgba(10, 18, 36, 0.98) !important;
+      border-color: rgba(102, 207, 255, 0.12) !important;
+    }
+
+    body[data-theme="dark"] .swagger-ui .responses-wrapper .response {
+      background: rgba(12, 22, 41, 0.98) !important;
+      border-radius: 14px;
+    }
+
+    body[data-theme="dark"] .swagger-ui .response-col_description,
+    body[data-theme="dark"] .swagger-ui .response-col_links,
+    body[data-theme="dark"] .swagger-ui .response-col_status,
+    body[data-theme="dark"] .swagger-ui .response-col_code {
+      color: #d9f2ff !important;
+    }
+
+    body[data-theme="dark"] .swagger-ui .responses-table tbody tr {
+      background: transparent !important;
+    }
+
+    body[data-theme="dark"] .swagger-ui .responses-table tbody tr:hover {
+      background: rgba(102, 207, 255, 0.05) !important;
+    }
+
+    body[data-theme="dark"] .swagger-ui .response-col_description .response-headers,
+    body[data-theme="dark"] .swagger-ui .response-col_description .markdown,
+    body[data-theme="dark"] .swagger-ui .response-col_description .response-controls {
+      background: transparent !important;
+    }
+
     .swagger-ui .opblock-body,
     .swagger-ui .parameters-container,
     .swagger-ui .responses-inner {
@@ -333,6 +366,13 @@ const swaggerUiOptions = {
     body[data-theme="dark"] .swagger-ui .opblock-section-header h4,
     body[data-theme="dark"] .swagger-ui .opblock-section-header label {
       color: var(--docs-text) !important;
+    }
+
+    body[data-theme="dark"] .swagger-ui .opblock-section-header,
+    body[data-theme="dark"] .swagger-ui .responses-header,
+    body[data-theme="dark"] .swagger-ui .parameters-container > .opblock-section-header {
+      background: linear-gradient(90deg, rgba(102, 207, 255, 0.08), rgba(46, 168, 255, 0.02)) !important;
+      border-bottom: 1px solid rgba(102, 207, 255, 0.12) !important;
     }
   `,
   customJsStr: `
