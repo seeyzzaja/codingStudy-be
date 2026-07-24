@@ -17,6 +17,10 @@ const options: swaggerJsdoc.Options = {
         url: `${config.BASE_URL}`,
         description: "Development Server",
       },
+      {
+        url: "https://coding-study-be-ten.vercel.app",
+        description: "Production Server",
+      }
     ],
     components: {
       securitySchemes: {
