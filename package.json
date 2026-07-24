@@ -10,7 +10,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "prisma.generate": "prisma generate",
     "prisma.migrate": "prisma migrate dev",
-    "prisma.migrate.prod":"prisma migrate deploy",
+    "prisma.migrate.prod": "prisma migrate deploy",
     "prisma.format": "prisma format",
     "seed": "tsx src/prisma/seed/seed.ts",
     "email": "email dev --dir src/module/email/templates"
@@ -56,6 +56,7 @@
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "swagger-jsdoc": "^6.3.0",
+    "swagger-themes": "^1.4.3",
     "swagger-ui-express": "^5.0.1",
     "zod": "^4.4.3"
   },

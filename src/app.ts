@@ -13,28 +13,19 @@ import courseRouter from "#module/course/route/course.route";
 import { errorHandler } from "#middlewares/error.handler";
 import swaggerUi from "swagger-ui-express";
 import swaggerSpec from "./config/swagger.js";
+import swaggerUiOptions from "./config/swagger-ui-theme.js";
 import onboardingRoute from "#module/onboarding/route/onboarding.route";
 import moduleRoute from "#module/module/route/module.route";
 import categoryRoute from "#module/category/route/category.route";
 import forgotPasswordRoute from "#module/auth/route/forgot-password.route";
 import paymentRoute from "#module/payment/route/payment.route";
 import myCourseRoute from "#module/my-course/route/my-course.route";
+
 const app = express();
 
-// app.get("/", (_req, _res) => {
-//   //   res.redirect("/api-docs");
-// });
-const swaggerUiOptions = {
-  customCssUrl: 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui.min.css',
-  customJs: [
-    'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-bundle.js',
-    'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-standalone-preset.js'
-  ]
-};
 app.use(
   helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" },
-  
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
@@ -45,11 +36,8 @@ app.use(
     },
   })
 );
-app.use(
-  '/api-docs', 
-  swaggerUi.serve, 
-  swaggerUi.setup(swaggerSpec, swaggerUiOptions) 
-);
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerUiOptions));
 app.use(cors());
 app.use(morgan("dev"));
 app.use(express.json());
