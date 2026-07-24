@@ -24,13 +24,32 @@ const app = express();
 // app.get("/", (_req, _res) => {
 //   //   res.redirect("/api-docs");
 // });
-
+const swaggerUiOptions = {
+  customCssUrl: 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui.min.css',
+  customJs: [
+    'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-bundle.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-standalone-preset.js'
+  ]
+};
 app.use(
   helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" },
+  
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "cdnjs.cloudflare.com"],
+        styleSrc: ["'self'", "'unsafe-inline'", "cdnjs.cloudflare.com", "fonts.googleapis.com"],
+        imgSrc: ["'self'", "data:", "validator.swagger.io"],
+      },
+    },
   })
 );
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use(
+  '/api-docs', 
+  swaggerUi.serve, 
+  swaggerUi.setup(swaggerSpec, swaggerUiOptions) 
+);
 app.use(cors());
 app.use(morgan("dev"));
 app.use(express.json());

@@ -2,11 +2,6 @@ import swaggerJsdoc from "swagger-jsdoc";
 import config from "#config/env";
 
 const options: swaggerJsdoc.Options = {
-  customCssUrl: 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui.min.css',
-  customJs: [
-    'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-bundle.js',
-    'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-standalone-preset.js'
-  ],
   definition: {
     openapi: "3.0.0",
     info: {
