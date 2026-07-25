@@ -18,10 +18,6 @@ export const createCourseValidation = [
     .isFloat({ min: 0 })
     .withMessage("Price harus berupa angka >= 0")
     .toFloat(),
-  body("thumbnailUrl")
-    .optional()
-    .isURL()
-    .withMessage("Thumbnail URL harus berupa URL yang valid"),
   body("status")
     .optional()
     .isIn(classStatuses)
@@ -31,6 +27,11 @@ export const createCourseValidation = [
     .isInt()
     .withMessage("mentorId harus berupa angka")
     .toInt(),
+  body("categoryId")
+    .notEmpty()
+    .withMessage("Category wajib dipilih")
+    .isUUID()
+    .withMessage("Category ID tidak valid"),
 ];
 
 export const updateCourseValidation = [
@@ -52,12 +53,6 @@ export const updateCourseValidation = [
     .isFloat({ min: 0 })
     .withMessage("Price harus berupa angka >= 0")
     .toFloat(),
-  body("thumbnailUrl")
-    .optional({ nullable: true })
-    .custom((value) => value === null || typeof value === "string")
-    .withMessage("Thumbnail URL harus berupa string atau null")
-    .custom((value) => value === null || /^https?:\/\//i.test(value))
-    .withMessage("Thumbnail URL harus berupa URL yang valid"),
   body("status")
     .optional()
     .isIn(classStatuses)

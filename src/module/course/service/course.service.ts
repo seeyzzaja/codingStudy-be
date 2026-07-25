@@ -5,6 +5,16 @@ import { AppError } from "#utils/app-error";
 const courseSelect = {
   id: true,
   mentorId: true,
+
+  // Tambahkan ini
+  categoryId: true,
+  category: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+
   title: true,
   description: true,
   price: true,
@@ -38,16 +48,15 @@ type AuthUser = {
 };
 
 export type CreateCourseInput = {
+  categoryId: string;
   title: string;
   description: string;
   price: number;
-  thumbnailUrl?: string;
+  thumbnailUrl: string;
   status?: ClassStatus;
 };
 
-export type UpdateCourseInput = Partial<CreateCourseInput> & {
-  thumbnailUrl?: string | null;
-};
+export type UpdateCourseInput = Partial<CreateCourseInput>;
 
 export type ListCoursesQuery = {
   search?: string;
@@ -94,10 +103,7 @@ const resolveMentorId = (authUser: AuthUser) => {
     return authUser.id;
   }
 
-  throw new AppError(
-    "Hanya mentor yang bisa mengelola course",
-    403
-  );
+  throw new AppError("Hanya mentor yang bisa mengelola course", 403);
 };
 
 const buildCourseFilters = (
@@ -148,16 +154,25 @@ const buildCourseFilters = (
 
 const courseService = {
   async create(data: CreateCourseInput, authUser: AuthUser) {
-    const mentorId =resolveMentorId(authUser);
+    const mentorId = resolveMentorId(authUser);
+    const category = await prisma.category.findUnique({
+      where: {
+        id: data.categoryId,
+      },
+    });
 
+    if (!category) {
+      throw new AppError("Category tidak ditemukan", 404);
+    }
     return serializeCourse(
       await prisma.class.create({
         data: {
           mentorId,
+          categoryId: data.categoryId,
           title: data.title,
           description: data.description,
           price: data.price,
-          ...(data.thumbnailUrl ? { thumbnailUrl: data.thumbnailUrl } : {}),
+          thumbnailUrl: data.thumbnailUrl,
           ...(data.status ? { status: data.status } : {}),
         },
         select: courseSelect,
@@ -234,7 +249,17 @@ const courseService = {
     }
 
     ensureCourseManagePermission(course, authUser);
+    if (data.categoryId !== undefined) {
+      const category = await prisma.category.findUnique({
+        where: {
+          id: data.categoryId,
+        },
+      });
 
+      if (!category) {
+        throw new AppError("Category tidak ditemukan", 404);
+      }
+    }
     const updateData: Prisma.ClassUpdateInput = {
       ...(data.title !== undefined ? { title: data.title } : {}),
       ...(data.description !== undefined
@@ -245,6 +270,7 @@ const courseService = {
         ? { thumbnailUrl: data.thumbnailUrl }
         : {}),
       ...(data.status !== undefined ? { status: data.status } : {}),
+      ...(data.categoryId !== undefined ? { categoryId: data.categoryId } : {}),
     };
 
     return serializeCourse(

@@ -18,7 +18,7 @@ model Payment {
   status        PaymentStatus @default(PENDING)
   enrollment    Enrollment?
   snapToken     String?       @map("snap_token")
-  redirectUrl String? @map("redirect_url")
+  redirectUrl   String?       @map("redirect_url")
   transactionId String?       @unique @map("transaction_id")
 
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
