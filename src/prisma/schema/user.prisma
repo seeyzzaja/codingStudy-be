@@ -15,6 +15,7 @@ model User {
   classes             Class[]          @relation("MentorClasses")
   payments            Payment[]
   enrollments         Enrollment[]
+  progress            ModuleProgress[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt

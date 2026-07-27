@@ -17,6 +17,7 @@ import {
 } from "#module/course/validation/course.validation";
 import { requireRole } from "#middlewares/require-role.middleware";
 import { getCourseModules } from "../controller/course-module.controller.js";
+import { upload } from "#middlewares/upload.middleware";
 
 const router = Router();
 
@@ -190,39 +191,59 @@ router.get("/:id", getCourseByIdValidation, getCourseById);
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             required:
+ *               - categoryId
  *               - title
  *               - description
  *               - price
+ *               - thumbnail
  *             properties:
+ *               categoryId:
+ *                 type: string
+ *                 format: uuid
+ *                 example: "7c3c4b5b-8d6d-4a17-a7f0-9b7c5bcbf1d4"
  *               title:
  *                 type: string
+ *                 example: "Node.js Fundamental"
  *               description:
  *                 type: string
+ *                 example: "Belajar Node.js dari dasar"
  *               price:
  *                 type: number
- *               thumbnailUrl:
- *                 type: string
- *                 nullable: true
+ *                 example: 100000
  *               status:
  *                 type: string
- *                 enum: [DRAFT, PUBLISHED]
+ *                 enum:
+ *                   - DRAFT
+ *                   - PUBLISHED
+ *                 example: DRAFT
+ *               thumbnail:
+ *                 type: string
+ *                 format: binary
  *
  *     responses:
  *       201:
  *         description: Course berhasil dibuat.
+ *       400:
+ *         description: Request tidak valid.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Hanya mentor yang dapat membuat course.
+ *       404:
+ *         description: Category tidak ditemukan.
  */
 router.post(
   "/",
   authenticate,
   requireRole("MENTOR"),
+  upload.single("thumbnail"),
   createCourseValidation,
   createCourse
 );
-
 /**
  * @openapi
  * /api/courses/{id}:
@@ -242,31 +263,51 @@ router.post(
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
+ *               categoryId:
+ *                 type: string
+ *                 format: uuid
+ *                 example: "7c3c4b5b-8d6d-4a17-a7f0-9b7c5bcbf1d4"
  *               title:
  *                 type: string
+ *                 example: "Node.js Fundamental Updated"
  *               description:
  *                 type: string
+ *                 example: "Belajar Node.js dari dasar hingga mahir"
  *               price:
  *                 type: number
- *               thumbnailUrl:
- *                 type: string
- *                 nullable: true
+ *                 example: 150000
  *               status:
  *                 type: string
- *                 enum: [DRAFT, PUBLISHED]
+ *                 enum:
+ *                   - DRAFT
+ *                   - PUBLISHED
+ *                 example: PUBLISHED
+ *               thumbnail:
+ *                 type: string
+ *                 format: binary
+ *                 description: Thumbnail baru (opsional)
  *
  *     responses:
  *       200:
  *         description: Course berhasil diperbarui.
+ *       400:
+ *         description: Request tidak valid.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Anda tidak memiliki akses ke course ini.
+ *       404:
+ *         description: Course atau Category tidak ditemukan.
  */
 router.put(
   "/:id",
   authenticate,
   requireRole("MENTOR"),
+  upload.single("thumbnail"),
   updateCourseValidation,
   updateCourse
 );

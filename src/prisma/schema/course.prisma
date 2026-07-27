@@ -14,7 +14,7 @@ model Class {
   status       ClassStatus @default(DRAFT)
 
   mentor      User         @relation("MentorClasses", fields: [mentorId], references: [id], onDelete: Restrict)
-  category    Category?    @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  category    Category?    @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   modules     Module[]
   payments    Payment[]
   enrollments Enrollment[]

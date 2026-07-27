@@ -14,9 +14,13 @@ const options: swaggerJsdoc.Options = {
     },
     servers: [
       {
+        url: "https://coding-study-be-ten.vercel.app",
+        description: "Production Server",
+      },
+      {
         url: `${config.BASE_URL}`,
         description: "Development Server",
-      },
+      }
     ],
     components: {
       securitySchemes: {
@@ -33,7 +37,7 @@ const options: swaggerJsdoc.Options = {
       },
     ],
   },
-  apis: ["src/**/*.ts", "src/**/*.js"],
+  apis: ["src/**/*.ts", "src/**/*.js","./dist/**/*.js"],
 };
 
 const swaggerSpec = swaggerJsdoc(options);
