@@ -16,6 +16,7 @@ model User {
   payments            Payment[]
   enrollments         Enrollment[]
   progress            ModuleProgress[]
+  reviews Review[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt

@@ -20,6 +20,7 @@ import categoryRoute from "#module/category/route/category.route";
 import forgotPasswordRoute from "#module/auth/route/forgot-password.route";
 import paymentRoute from "#module/payment/route/payment.route";
 import myCourseRoute from "#module/my-course/route/my-course.route";
+import reviewRouter from "#module/review/route/review.route";
 
 const app = express();
 
@@ -30,14 +31,23 @@ app.use(
       directives: {
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'", "'unsafe-inline'", "cdnjs.cloudflare.com"],
-        styleSrc: ["'self'", "'unsafe-inline'", "cdnjs.cloudflare.com", "fonts.googleapis.com"],
+        styleSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          "cdnjs.cloudflare.com",
+          "fonts.googleapis.com",
+        ],
         imgSrc: ["'self'", "data:", "validator.swagger.io"],
       },
     },
   })
 );
 
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerUiOptions));
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec, swaggerUiOptions)
+);
 app.use(cors());
 app.use(morgan("dev"));
 app.use(express.json());
@@ -74,6 +84,7 @@ app.use("/api/onboarding", onboardingRoute);
 app.use("/api/categories", categoryRoute);
 app.use("/api/payments", paymentRoute);
 app.use("/api/my-courses", myCourseRoute);
+app.use("/api", reviewRouter);
 app.use(express.static("./"));
 
 app.use((req: Request, _res: Response, next: NextFunction) => {
