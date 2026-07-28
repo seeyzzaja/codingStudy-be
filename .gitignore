@@ -19,3 +19,5 @@ Thumbs.db
 /generated/prisma
 
 /generated/prisma
+
+logs/*.log

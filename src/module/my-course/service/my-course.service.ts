@@ -1,5 +1,6 @@
 import prisma from "#prisma";
 import { AppError } from "#utils/app-error";
+import logger from "#config/logger";
 
 type AuthUser = {
   id: number;
@@ -15,6 +16,10 @@ const myCourseService = {
     });
 
     if (!user) {
+      logger.warn("Gagal mengambil course saya - User tidak ditemukan", {
+        userId: authUser.id,
+      });
+
       throw new AppError("User tidak ditemukan", 404);
     }
 
@@ -38,6 +43,11 @@ const myCourseService = {
       orderBy: {
         createdAt: "desc",
       },
+    });
+
+    logger.info("Berhasil mengambil daftar course user", {
+      userId: authUser.id,
+      totalCourses: enrollments.length,
     });
 
     return enrollments.map((enrollment) => ({

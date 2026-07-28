@@ -1,5 +1,6 @@
 import prisma from "#prisma";
 import { AppError } from "#utils/app-error";
+import logger from "#config/logger";
 
 export const updateModuleProgress = async (
   userId: number,
@@ -20,6 +21,11 @@ export const updateModuleProgress = async (
   });
 
   if (!module) {
+    logger.warn("Gagal update progress - Module tidak ditemukan", {
+      userId,
+      moduleId,
+    });
+
     throw new AppError("Module tidak ditemukan", 404);
   }
 
@@ -32,11 +38,20 @@ export const updateModuleProgress = async (
   });
 
   if (!enrollment) {
+    logger.warn("Gagal update progress - User belum enroll", {
+      userId,
+      classId: module.classId,
+    });
+
     throw new AppError("Anda belum terdaftar pada kelas ini", 403);
   }
 
   // Pastikan mentor sudah mengisi durasi video
   if (module.durationSeconds <= 0) {
+    logger.warn("Gagal update progress - Durasi video belum diatur", {
+      moduleId,
+    });
+
     throw new AppError("Durasi video belum diatur", 400);
   }
 
@@ -64,7 +79,7 @@ export const updateModuleProgress = async (
 
   const completed = progress >= 100;
 
-  return prisma.moduleProgress.upsert({
+  const result = await prisma.moduleProgress.upsert({
     where: {
       userId_moduleId: {
         userId,
@@ -91,6 +106,15 @@ export const updateModuleProgress = async (
       completedAt: completed ? new Date() : null,
     },
   });
+
+  logger.info("Progress module berhasil diperbarui", {
+    userId,
+    moduleId,
+    progress,
+    completed,
+  });
+
+  return result;
 };
 
 export const getModuleProgressByClass = async (
@@ -106,6 +130,11 @@ export const getModuleProgressByClass = async (
   });
 
   if (!enrollment) {
+    logger.warn("Gagal mengambil progress - User belum enroll", {
+      userId,
+      classId,
+    });
+
     throw new AppError("Anda belum terdaftar pada kelas ini", 403);
   }
 
@@ -133,6 +162,12 @@ export const getModuleProgressByClass = async (
         },
       },
     },
+  });
+
+  logger.info("Progress module berhasil diambil", {
+    userId,
+    classId,
+    totalModule: modules.length,
   });
 
   return modules.map((module) => ({

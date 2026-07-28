@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import type { Prisma } from "@prisma/client";
 import prisma from "#prisma";
 import { AppError } from "#utils/app-error";
+import logger from "#config/logger";
 
 const publicUserSelect = {
   id: true,
@@ -39,33 +40,67 @@ export type CreateUserInput = {
 export type UpdateUserInput = Partial<CreateUserInput>;
 
 const userService = {
-  async findAll(): Promise<UserResponse[]> {
-    return prisma.user.findMany({
-      where: activeUserWhere,
-      select: publicUserSelect,
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-  },
+async findAll(): Promise<UserResponse[]> {
+  const users = await prisma.user.findMany({
+    where: activeUserWhere,
+    select: publicUserSelect,
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  logger.info("Berhasil mengambil daftar user", {
+    total: users.length,
+  });
+
+  return users;
+},
 
   async findById(id: number): Promise<UserResponse | null> {
-    return prisma.user.findFirst({
+    const user = await prisma.user.findFirst({
       where: {
         id,
         ...activeUserWhere,
       },
       select: publicUserSelect,
     });
+
+    if (!user) {
+      logger.warn("User tidak ditemukan", {
+        userId: id,
+      });
+
+      return null;
+    }
+
+    logger.info("Berhasil mengambil data user", {
+      userId: id,
+    });
+
+    return user;
   },
 
   async findByEmail(email: string) {
-    return prisma.user.findFirst({
+    const user = await prisma.user.findFirst({
       where: {
         email,
         ...activeUserWhere,
       },
     });
+
+    if (!user) {
+      logger.warn("User tidak ditemukan berdasarkan email", {
+        email,
+      });
+
+      return null;
+    }
+
+   logger.info("Berhasil mengambil data user berdasarkan email", {
+  userId: user.id,
+});
+
+    return user;
   },
 
   async create(data: CreateUserInput): Promise<UserResponse> {
@@ -76,6 +111,10 @@ const userService = {
     });
 
     if (existingUser) {
+      logger.warn("Gagal membuat user - Email sudah digunakan", {
+        email: data.email,
+      });
+
       throw new AppError("Email sudah digunakan", 409);
     }
 
@@ -86,12 +125,16 @@ const userService = {
     });
 
     if (!role) {
+      logger.warn("Gagal membuat user - Role tidak ditemukan", {
+        role: data.role,
+      });
+
       throw new AppError("Role tidak ditemukan", 404);
     }
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
 
-    return prisma.user.create({
+    const user = await prisma.user.create({
       data: {
         name: data.name,
         email: data.email,
@@ -104,6 +147,12 @@ const userService = {
       },
       select: publicUserSelect,
     });
+  logger.info("User berhasil dibuat", {
+  userId: user.id,
+  role: data.role,
+});
+
+    return user;
   },
 
   async update(id: number, data: UpdateUserInput): Promise<UserResponse> {
@@ -115,6 +164,10 @@ const userService = {
     });
 
     if (!existingUser) {
+      logger.warn("Gagal mengupdate user - User tidak ditemukan", {
+        userId: id,
+      });
+
       throw new AppError("User tidak ditemukan", 404);
     }
 
@@ -129,6 +182,11 @@ const userService = {
       });
 
       if (emailExists) {
+        logger.warn("Gagal mengupdate user - Email sudah digunakan", {
+          userId: id,
+          email: data.email,
+        });
+
         throw new AppError("Email sudah digunakan", 409);
       }
     }
@@ -143,6 +201,10 @@ const userService = {
       });
 
       if (!role) {
+        logger.warn("Gagal mengupdate user - Role tidak ditemukan", {
+          role: data.role,
+        });
+
         throw new AppError("Role tidak ditemukan", 404);
       }
 
@@ -155,7 +217,7 @@ const userService = {
       hashedPassword = await bcrypt.hash(data.password, 10);
     }
 
-    return prisma.user.update({
+    const updatedUser = await prisma.user.update({
       where: {
         id,
       },
@@ -190,6 +252,11 @@ const userService = {
       },
       select: publicUserSelect,
     });
+    logger.info("User berhasil diperbarui", {
+      userId: updatedUser.id,
+    });
+
+    return updatedUser;
   },
 
   async softDelete(id: number): Promise<UserResponse> {
@@ -201,10 +268,13 @@ const userService = {
     });
 
     if (!existingUser) {
+      logger.warn("Gagal menghapus user - User tidak ditemukan", {
+        userId: id,
+      });
+
       throw new AppError("User tidak ditemukan", 404);
     }
-
-    return prisma.user.update({
+    const deletedUser = await prisma.user.update({
       where: {
         id,
       },
@@ -213,6 +283,11 @@ const userService = {
       },
       select: publicUserSelect,
     });
+    logger.info("User berhasil dihapus", {
+      userId: deletedUser.id,
+    });
+
+    return deletedUser;
   },
 };
 

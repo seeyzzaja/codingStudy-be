@@ -4,6 +4,8 @@ import { AppError } from "#utils/app-error";
 import crypto from "crypto";
 import env from "#config/env";
 import { PaymentStatus } from "@prisma/client";
+import logger from "#config/logger";
+
 type AuthUser = {
   id: number;
 };
@@ -97,9 +99,8 @@ const paymentService = {
     };
   },
   async checkout(classId: string, authUser: AuthUser): Promise<CheckoutResult> {
-    
     // Cari user
-  
+
     const user = await prisma.user.findUnique({
       where: {
         id: authUser.id,
@@ -107,12 +108,14 @@ const paymentService = {
     });
 
     if (!user) {
+      logger.warn("Checkout gagal - User tidak ditemukan", {
+        userId: authUser.id,
+      });
+
       throw new AppError("User tidak ditemukan", 404);
     }
-
-    
     // Cari course
-    
+
     const course = await prisma.class.findFirst({
       where: {
         id: classId,
@@ -122,10 +125,14 @@ const paymentService = {
     });
 
     if (!course) {
+      logger.warn("Checkout gagal - Course tidak ditemukan", {
+        userId: authUser.id,
+        classId,
+      });
+
       throw new AppError("Course tidak ditemukan", 404);
     }
 
- 
     // Sudah memiliki course?
 
     const enrollment = await prisma.enrollment.findUnique({
@@ -138,10 +145,14 @@ const paymentService = {
     });
 
     if (enrollment) {
+      logger.warn("Checkout gagal - Course sudah dimiliki", {
+        userId: authUser.id,
+        classId,
+      });
+
       throw new AppError("Kamu sudah memiliki course ini", 400);
     }
 
-  
     // Cek apakah masih ada payment pending
 
     const pendingPayment = await prisma.payment.findFirst({
@@ -153,6 +164,11 @@ const paymentService = {
     });
 
     if (pendingPayment) {
+      logger.info("Menggunakan payment pending yang sudah ada", {
+        paymentId: pendingPayment.id,
+        orderId: pendingPayment.orderId,
+        userId: authUser.id,
+      });
       return {
         paymentId: pendingPayment.id,
         orderId: pendingPayment.orderId,
@@ -161,13 +177,11 @@ const paymentService = {
       };
     }
 
-
     // Generate Order ID
     const orderId = `COURSE-${Date.now()}`;
 
-   
     // Simpan Payment
-   
+
     const payment = await prisma.payment.create({
       data: {
         userId: authUser.id,
@@ -177,8 +191,13 @@ const paymentService = {
         status: "PENDING",
       },
     });
-
-    
+    logger.info("Payment berhasil dibuat", {
+      paymentId: payment.id,
+      orderId,
+      userId: authUser.id,
+      classId,
+      amount: Number(course.price),
+    });
     // Request Midtrans
 
     let transaction;
@@ -191,7 +210,12 @@ const paymentService = {
         },
       });
     } catch (error) {
-      console.error("Midtrans Error:", error);
+      logger.error("Midtrans gagal membuat transaksi", {
+        paymentId: payment.id,
+        orderId,
+        userId: authUser.id,
+        error: error instanceof Error ? error.message : error,
+      });
 
       await prisma.payment.delete({
         where: {
@@ -212,6 +236,13 @@ const paymentService = {
         snapToken: transaction.token,
         redirectUrl: transaction.redirect_url,
       },
+    });
+    logger.info("Checkout berhasil dibuat", {
+      paymentId: payment.id,
+      orderId,
+      userId: authUser.id,
+      classId,
+      amount: Number(course.price),
     });
 
     return {
@@ -260,6 +291,10 @@ const paymentService = {
       .digest("hex");
 
     if (expectedSignature !== payload.signature_key) {
+      logger.warn("Webhook gagal - Signature Midtrans tidak valid", {
+        orderId: payload.order_id,
+      });
+
       throw new AppError("Signature Midtrans tidak valid", 401);
     }
     const payment = await prisma.payment.findUnique({
@@ -269,17 +304,25 @@ const paymentService = {
     });
 
     if (!payment) {
-      console.log("Webhook test atau order tidak dikenal:", payload.order_id);
+      logger.warn("Webhook diterima tetapi order tidak ditemukan", {
+        orderId: payload.order_id,
+      });
       return;
     }
     if (Number(payment.amount) !== Number(payload.gross_amount)) {
+      logger.warn("Webhook gagal - Nominal pembayaran tidak sesuai", {
+        orderId: payload.order_id,
+      });
+
       throw new AppError("Nominal pembayaran tidak sesuai", 400);
     }
-
     if (payload.merchant_id !== env.MIDTRANS_MERCHANT_ID) {
+      logger.warn("Webhook gagal - Merchant ID tidak valid", {
+        orderId: payload.order_id,
+      });
+
       throw new AppError("Merchant Midtrans tidak valid", 401);
     }
-    
     // Validasi Signature Key Midtrans
     // =====================================
     let status = payment.status;
@@ -310,11 +353,15 @@ const paymentService = {
       default:
         return;
     }
-
+    logger.info("Webhook Midtrans diterima", {
+      orderId: payment.orderId,
+      transactionStatus: payload.transaction_status,
+    });
     if (payment.status === status) {
-      console.log(
-        `Webhook diabaikan karena status sudah ${status} (${payment.orderId})`
-      );
+      logger.info("Webhook diabaikan karena status tidak berubah", {
+        orderId: payment.orderId,
+        status,
+      });
 
       return payment;
     }
@@ -330,12 +377,21 @@ const paymentService = {
           : {}),
       },
     });
+    logger.info("Status payment berhasil diperbarui", {
+      paymentId: payment.id,
+      orderId: payment.orderId,
+      status,
+    });
     // Jika pembayaran berhasil, buat enrollment
     if (status === "REFUNDED") {
       await prisma.enrollment.deleteMany({
         where: {
           paymentId: payment.id,
         },
+      });
+      logger.info("Enrollment dihapus karena refund", {
+        paymentId: payment.id,
+        orderId: payment.orderId,
       });
     }
     if (status === "PAID") {
@@ -355,6 +411,11 @@ const paymentService = {
             classId: payment.classId,
             paymentId: payment.id,
           },
+        });
+        logger.info("Enrollment berhasil dibuat", {
+          paymentId: payment.id,
+          userId: payment.userId,
+          classId: payment.classId,
         });
       }
     }

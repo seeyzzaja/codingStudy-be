@@ -5,7 +5,6 @@ import express, {
 } from "express";
 import helmet from "helmet";
 import cors from "cors";
-import morgan from "morgan";
 import { successResponse } from "#utils/response";
 import userRouter from "#module/user/route/user.route";
 import authRouter from "#module/auth/route/auth.route";
@@ -21,6 +20,8 @@ import forgotPasswordRoute from "#module/auth/route/forgot-password.route";
 import paymentRoute from "#module/payment/route/payment.route";
 import myCourseRoute from "#module/my-course/route/my-course.route";
 import reviewRouter from "#module/review/route/review.route";
+import logger from "./config/logger";
+import { requestLogger } from "#middlewares/request-logger.middleware";
 
 const app = express();
 
@@ -49,15 +50,11 @@ app.use(
   swaggerUi.setup(swaggerSpec, swaggerUiOptions)
 );
 app.use(cors());
-app.use(morgan("dev"));
 app.use(express.json());
+app.use(requestLogger);
 app.use(express.urlencoded({ extended: true }));
 
-app.use((req: Request, _res: Response, next: NextFunction) => {
-  console.log(`Request masuk jam ${new Date().toISOString()}`);
-  req.startTime = Date.now();
-  next();
-});
+
 
 app.get("/", (req: Request, res: Response) => {
   const processTime = Date.now() - (req.startTime ?? Date.now());
@@ -91,5 +88,5 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
   next(new Error(`Route ${req.originalUrl} tidak ditemukan`));
 });
 app.use(errorHandler);
-
+logger.info("Server starting...");
 export default app;
