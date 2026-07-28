@@ -20,7 +20,7 @@ import forgotPasswordRoute from "#module/auth/route/forgot-password.route";
 import paymentRoute from "#module/payment/route/payment.route";
 import myCourseRoute from "#module/my-course/route/my-course.route";
 import reviewRouter from "#module/review/route/review.route";
-import logger from "./config/logger";
+import logger from "./config/logger.js";
 import { requestLogger } from "#middlewares/request-logger.middleware";
 
 const app = express();
