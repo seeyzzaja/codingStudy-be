@@ -14,12 +14,12 @@ const options: swaggerJsdoc.Options = {
     },
     servers: [
       {
-        url: `${config.BASE_URL}`,
-        description: "Development Server",
-      },
-      {
         url: "https://coding-study-be-ten.vercel.app",
         description: "Production Server",
+      },
+      {
+        url: `${config.BASE_URL}`,
+        description: "Development Server",
       }
     ],
     components: {

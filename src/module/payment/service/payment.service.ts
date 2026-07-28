@@ -97,9 +97,9 @@ const paymentService = {
     };
   },
   async checkout(classId: string, authUser: AuthUser): Promise<CheckoutResult> {
-    // ================================
+    
     // Cari user
-    // ================================
+  
     const user = await prisma.user.findUnique({
       where: {
         id: authUser.id,
@@ -110,9 +110,9 @@ const paymentService = {
       throw new AppError("User tidak ditemukan", 404);
     }
 
-    // ================================
+    
     // Cari course
-    // ================================
+    
     const course = await prisma.class.findFirst({
       where: {
         id: classId,
@@ -125,9 +125,9 @@ const paymentService = {
       throw new AppError("Course tidak ditemukan", 404);
     }
 
-    // ================================
+ 
     // Sudah memiliki course?
-    // ================================
+
     const enrollment = await prisma.enrollment.findUnique({
       where: {
         userId_classId: {
@@ -141,9 +141,9 @@ const paymentService = {
       throw new AppError("Kamu sudah memiliki course ini", 400);
     }
 
-    // ================================
+  
     // Cek apakah masih ada payment pending
-    // ================================
+
     const pendingPayment = await prisma.payment.findFirst({
       where: {
         userId: authUser.id,
@@ -161,14 +161,13 @@ const paymentService = {
       };
     }
 
-    // ================================
+
     // Generate Order ID
-    // ================================
     const orderId = `COURSE-${Date.now()}`;
 
-    // ================================
+   
     // Simpan Payment
-    // ================================
+   
     const payment = await prisma.payment.create({
       data: {
         userId: authUser.id,
@@ -179,9 +178,9 @@ const paymentService = {
       },
     });
 
-    // ================================
+    
     // Request Midtrans
-    // ================================
+
     let transaction;
 
     try {
@@ -202,9 +201,9 @@ const paymentService = {
 
       throw new AppError("Gagal membuat transaksi pembayaran", 500);
     }
-    // ================================
+
     // Simpan Snap Token
-    // ================================
+
     await prisma.payment.update({
       where: {
         id: payment.id,
@@ -280,10 +279,9 @@ const paymentService = {
     if (payload.merchant_id !== env.MIDTRANS_MERCHANT_ID) {
       throw new AppError("Merchant Midtrans tidak valid", 401);
     }
-    // =====================================
+    
     // Validasi Signature Key Midtrans
     // =====================================
-
     let status = payment.status;
 
     switch (payload.transaction_status) {

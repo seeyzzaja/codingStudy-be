@@ -3,21 +3,40 @@ import { AppError } from "#utils/app-error";
 import { asyncHandler } from "#utils/async.handler";
 import { successResponse } from "#utils/response";
 import type { Request, Response } from "express";
+import cloudinary from "#config/cloudinary";
+import { Readable } from "stream";
 
 export const createCourse = asyncHandler(
   async (req: Request, res: Response) => {
     if (!req.user) {
-      throw new AppError(
-        "User tidak terautentikasi",
-        401
-      );
+      throw new AppError("User tidak terautentikasi", 401);
     }
 
+    let thumbnailUrl: string | undefined;
+if (!req.file) {
+  throw new AppError("Thumbnail wajib diupload", 400);
+}
     const file = req.file;
 
-    const thumbnailUrl = file
-      ? `/public/thumbnail/${file.filename}`
-      : undefined;
+    if (file) {
+      thumbnailUrl = await new Promise<string>((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          {
+            folder: "coding-study/courses",
+          },
+          (error, result) => {
+            if (error || !result) {
+              return reject(error);
+            }
+
+            resolve(result.secure_url);
+          }
+        );
+
+        Readable.from(file.buffer).pipe(uploadStream);
+      });
+    }
+
     const mentorId =
       typeof req.body.mentorId === "string" && req.body.mentorId !== ""
         ? Number(req.body.mentorId)
@@ -25,10 +44,8 @@ export const createCourse = asyncHandler(
 
     const payload = {
       ...req.body,
-
       price: Number(req.body.price),
       ...(mentorId !== undefined ? { mentorId } : {}),
-
       thumbnailUrl,
     };
 
@@ -46,7 +63,6 @@ export const createCourse = asyncHandler(
     );
   }
 );
-
 export const getAllCourses = asyncHandler(
   async (req: Request, res: Response) => {
     const query: Parameters<typeof courseService.findAll>[0] = {};
@@ -61,10 +77,13 @@ export const getAllCourses = asyncHandler(
         query.mentorId = mentorId;
       }
     }
-    if (typeof req.query.minPrice === "number") query.minPrice = req.query.minPrice;
-    if (typeof req.query.maxPrice === "number") query.maxPrice = req.query.maxPrice;
+    if (typeof req.query.minPrice === "number")
+      query.minPrice = req.query.minPrice;
+    if (typeof req.query.maxPrice === "number")
+      query.maxPrice = req.query.maxPrice;
     if (typeof req.query.sortBy === "string") {
-      query.sortBy = req.query.sortBy as "createdAt" | "updatedAt" | "price" | "title";
+      query.sortBy = req.query.sortBy as
+        "createdAt" | "updatedAt" | "price" | "title";
     }
     if (typeof req.query.sortOrder === "string") {
       query.sortOrder = req.query.sortOrder as "asc" | "desc";
@@ -96,32 +115,76 @@ export const getCourseById = asyncHandler(
   }
 );
 
-export const updateCourse = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user) {
-    throw new AppError("User tidak terautentikasi", 401);
+export const updateCourse = asyncHandler(
+  async (req: Request, res: Response) => {
+    if (!req.user) {
+      throw new AppError("User tidak terautentikasi", 401);
+    }
+
+    const { id } = req.params;
+
+    if (!id || Array.isArray(id)) {
+      throw new AppError("ID course wajib diisi", 400);
+    }
+
+    let thumbnailUrl: string | undefined;
+
+    const file = req.file;
+
+if (file) {
+  thumbnailUrl = await new Promise<string>((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: "coding-study/courses",
+      },
+      (error, result) => {
+        if (error || !result) {
+          return reject(error);
+        }
+
+        resolve(result.secure_url);
+      }
+    );
+
+    Readable.from(file.buffer).pipe(uploadStream);
+  });
+}
+
+    const payload = {
+      ...req.body,
+      ...(req.body.price !== undefined
+        ? { price: Number(req.body.price) }
+        : {}),
+      ...(thumbnailUrl ? { thumbnailUrl } : {}),
+    };
+
+    const course = await courseService.update(
+      id,
+      payload,
+      req.user
+    );
+
+    return successResponse(
+      res,
+      "Course berhasil diperbarui",
+      course
+    );
   }
+);
 
-  const { id } = req.params;
-  if (!id || Array.isArray(id)) {
-    throw new AppError("ID course wajib diisi", 400);
+export const deleteCourse = asyncHandler(
+  async (req: Request, res: Response) => {
+    if (!req.user) {
+      throw new AppError("User tidak terautentikasi", 401);
+    }
+
+    const { id } = req.params;
+    if (!id || Array.isArray(id)) {
+      throw new AppError("ID course wajib diisi", 400);
+    }
+
+    await courseService.softDelete(id, req.user);
+
+    return successResponse(res, "Course berhasil dihapus", null);
   }
-
-  const course = await courseService.update(id, req.body, req.user);
-
-  return successResponse(res, "Course berhasil diperbarui", course);
-});
-
-export const deleteCourse = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user) {
-    throw new AppError("User tidak terautentikasi", 401);
-  }
-
-  const { id } = req.params;
-  if (!id || Array.isArray(id)) {
-    throw new AppError("ID course wajib diisi", 400);
-  }
-
-  await courseService.softDelete(id, req.user);
-
-  return successResponse(res, "Course berhasil dihapus", null);
-});
+);
