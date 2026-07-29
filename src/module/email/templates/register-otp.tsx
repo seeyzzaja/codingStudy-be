@@ -6,12 +6,10 @@ import {
   Heading,
   Hr,
   Html,
-  Img,
   Preview,
   Section,
   Text,
 } from "@react-email/components";
-import { logoCsDataUri } from "../logo-cs.js";
 
 type RegisterOtpEmailProps = {
   name: string;
@@ -58,19 +56,43 @@ export default function RegisterOtpEmail({
               padding: "50px 30px",
             }}
           >
-            <Img
-              src={logoCsDataUri}
-              alt="Coding Study"
-              width="300"
-              height="100"
+            <Section
               style={{
-                display: "block",
-                margin: "0 auto",
                 width: "300px",
-                height: "100px",
-                objectFit: "cover",
+                margin: "0 auto",
+                backgroundColor: "#0E0B1E",
+                borderRadius: "18px",
+                border: "1px solid #4C3CFA",
+                textAlign: "center",
+                padding: "22px 20px 18px",
               }}
-            />
+            >
+              <Text
+                style={{
+                  margin: 0,
+                  color: "#4C3CFA",
+                  fontSize: "52px",
+                  lineHeight: "1",
+                  fontWeight: "700",
+                  fontFamily: "Consolas, 'Courier New', monospace",
+                  letterSpacing: "2px",
+                }}
+              >
+                &lt;
+                <span style={{ color: "#ffffff" }}>/</span>
+                &gt;
+              </Text>
+              <Text
+                style={{
+                  margin: "12px 0 0",
+                  color: "#9C98B8",
+                  fontSize: "12px",
+                  letterSpacing: "2px",
+                }}
+              >
+                CODING STUDY
+              </Text>
+            </Section>
 
             <Heading
               style={{
