@@ -1,6 +1,7 @@
 import type { ClassStatus, Prisma } from "@prisma/client";
 import prisma from "#prisma";
 import { AppError } from "#utils/app-error";
+import logger from "#config/logger";
 
 const courseSelect = {
   id: true,
@@ -162,22 +163,33 @@ const courseService = {
     });
 
     if (!category) {
+      logger.warn("Gagal membuat course - Category tidak ditemukan", {
+        mentorId,
+        categoryId: data.categoryId,
+      });
+
       throw new AppError("Category tidak ditemukan", 404);
     }
-    return serializeCourse(
-      await prisma.class.create({
-        data: {
-          mentorId,
-          categoryId: data.categoryId,
-          title: data.title,
-          description: data.description,
-          price: data.price,
-          thumbnailUrl: data.thumbnailUrl,
-          ...(data.status ? { status: data.status } : {}),
-        },
-        select: courseSelect,
-      })
-    );
+    const course = await prisma.class.create({
+      data: {
+        mentorId,
+        categoryId: data.categoryId,
+        title: data.title,
+        description: data.description,
+        price: data.price,
+        thumbnailUrl: data.thumbnailUrl,
+        ...(data.status ? { status: data.status } : {}),
+      },
+      select: courseSelect,
+    });
+
+    logger.info("Course berhasil dibuat", {
+      courseId: course.id,
+      mentorId,
+      title: course.title,
+    });
+
+    return serializeCourse(course);
   },
 
   async findAll(query: ListCoursesQuery) {
@@ -245,6 +257,11 @@ const courseService = {
     });
 
     if (!course) {
+      logger.warn("Gagal mengupdate course - Course tidak ditemukan", {
+        courseId: id,
+        userId: authUser.id,
+      });
+
       throw new AppError("Course tidak ditemukan", 404);
     }
 
@@ -257,6 +274,11 @@ const courseService = {
       });
 
       if (!category) {
+        logger.warn("Gagal mengupdate course - Category tidak ditemukan", {
+          courseId: id,
+          categoryId: data.categoryId,
+        });
+
         throw new AppError("Category tidak ditemukan", 404);
       }
     }
@@ -273,13 +295,18 @@ const courseService = {
       ...(data.categoryId !== undefined ? { categoryId: data.categoryId } : {}),
     };
 
-    return serializeCourse(
-      await prisma.class.update({
-        where: { id },
-        data: updateData,
-        select: courseSelect,
-      })
-    );
+    const updatedCourse = await prisma.class.update({
+      where: { id },
+      data: updateData,
+      select: courseSelect,
+    });
+
+    logger.info("Course berhasil diperbarui", {
+      courseId: updatedCourse.id,
+      mentorId: authUser.id,
+    });
+
+    return serializeCourse(updatedCourse);
   },
 
   async softDelete(id: string, authUser: AuthUser) {
@@ -292,17 +319,27 @@ const courseService = {
     });
 
     if (!course) {
+      logger.warn("Gagal menghapus course - Course tidak ditemukan", {
+        courseId: id,
+        userId: authUser.id,
+      });
+
       throw new AppError("Course tidak ditemukan", 404);
     }
 
     ensureCourseManagePermission(course, authUser);
 
     await prisma.class.update({
+      
       where: { id },
       data: {
         deletedAt: new Date(),
       },
     });
+    logger.info("Course berhasil dihapus", {
+  courseId: id,
+  mentorId: authUser.id,
+});
   },
 };
 
