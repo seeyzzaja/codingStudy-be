@@ -3,8 +3,8 @@ import { validateRequest } from "#middlewares/validate-request.middleware";
 import {
   createModuleValidation,
   deleteModuleValidation,
-  // getModuleByIdValidation,
   listModulesValidation,
+  getModuleByIdValidation,
   updateModuleValidation,
 } from "#module/module/validation/module.validation";
 import { authenticate } from "#middlewares/auth.middlewares";
@@ -12,10 +12,11 @@ import { requireRole } from "#middlewares/require-role.middleware";
 import {
   create,
   getAll,
-  // getById,
+  getById,
   update,
   remove,
 } from "../controller/module.controller.js";
+import { readLimiter, writeLimiter } from "#middlewares/rate-limit.middleware";
 
 const router = Router();
 
@@ -79,6 +80,7 @@ const router = Router();
  */
 router.post(
   "/",
+  writeLimiter,
   authenticate,
   requireRole("MENTOR"),
   createModuleValidation,
@@ -135,7 +137,13 @@ router.post(
  *       400:
  *         description: Query parameter tidak valid
  */
-router.get("/", listModulesValidation, validateRequest, getAll);
+router.get(
+  "/",
+  readLimiter,
+  listModulesValidation,
+  validateRequest,
+  getAll
+);
 
 /**
  * @swagger
@@ -169,12 +177,13 @@ router.get("/", listModulesValidation, validateRequest, getAll);
  *         description: Module tidak ditemukan
  */
 router.get(
-  "/",
+  "/:id",
+  readLimiter,
   authenticate,
   requireRole("MENTOR"),
-  listModulesValidation,
+  getModuleByIdValidation,
   validateRequest,
-  getAll
+  getById
 );
 
 /**
@@ -273,6 +282,7 @@ router.patch(
  */
 router.delete(
   "/:id",
+  writeLimiter,
   authenticate,
   requireRole("MENTOR"),
   deleteModuleValidation,

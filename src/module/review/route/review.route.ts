@@ -13,6 +13,7 @@ import {
   createReviewValidation,
   updateReviewValidation,
 } from "#module/review/validation/review.validation";
+import { readLimiter, writeLimiter } from "#middlewares/rate-limit.middleware";
 
 const router = Router();
 
@@ -63,6 +64,7 @@ const router = Router();
  */
 router.post(
   "/courses/:id/reviews",
+  writeLimiter,
   authenticate,
   createReviewValidation,
   createReviewController
@@ -142,7 +144,11 @@ router.post(
  *       404:
  *         description: Course tidak ditemukan.
  */
-router.get("/courses/:id/reviews", getReviewsController);
+router.get(
+  "/courses/:id/reviews",
+  readLimiter,
+  getReviewsController
+);
 
 /**
  * @openapi
@@ -189,6 +195,7 @@ router.get("/courses/:id/reviews", getReviewsController);
  */
 router.put(
   "/reviews/:reviewId",
+  writeLimiter,
   authenticate,
   updateReviewValidation,
   updateReviewController
@@ -222,6 +229,11 @@ router.put(
  *       404:
  *         description: Review tidak ditemukan.
  */
-router.delete("/reviews/:reviewId", authenticate, deleteReviewController);
+router.delete(
+  "/reviews/:reviewId",
+  writeLimiter,
+  authenticate,
+  deleteReviewController
+);
 
 export default router;

@@ -9,6 +9,14 @@ import {
   registerSchema,
   verifyOtpSchema,
 } from "#module/auth/validation/auth.validation";
+import {
+  loginLimiter,
+  registerLimiter,
+  verifyOtpLimiter,
+  refreshTokenLimiter,
+  writeLimiter,
+} from "#middlewares/rate-limit.middleware";
+
 const router = Router();
 
 /**
@@ -69,6 +77,7 @@ const router = Router();
  */
 router.post(
   "/register",
+  registerLimiter,
   validateZod(registerSchema),
   AuthController.register
 );
@@ -103,10 +112,11 @@ router.post(
  *       404:
  *         description: User atau OTP tidak ditemukan
  *       409:
-*         description: Email sudah diverifikasi
+ *         description: Email sudah diverifikasi
  */
 router.post(
   "/verify-otp",
+  verifyOtpLimiter,
   validateZod(verifyOtpSchema),
   AuthController.verifyOtp
 );
@@ -149,9 +159,14 @@ router.post(
  *       401:
  *         description: Email atau password salah
  *       403:
-*         description: Email belum diverifikasi
+ *         description: Email belum diverifikasi
  */
-router.post("/login", validateZod(loginSchema), AuthController.login);
+router.post(
+  "/login",
+  loginLimiter,
+  validateZod(loginSchema),
+  AuthController.login
+);
 
 /**
  * @swagger
@@ -191,6 +206,7 @@ router.post("/login", validateZod(loginSchema), AuthController.login);
  */
 router.post(
   "/refresh-token",
+  refreshTokenLimiter,
   validateZod(refreshTokenSchema),
   AuthController.refreshToken
 );
@@ -229,12 +245,10 @@ router.post(
  */
 router.post(
   "/logout",
+  writeLimiter,
   authenticate,
   validateZod(logoutSchema),
   AuthController.logout
 );
 
 export default router;
-
-
-

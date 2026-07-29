@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { onboardingController } from "../controller/onboarding.controller.js";
 import { authenticate } from "#middlewares/auth.middlewares";
+import { writeLimiter } from "#middlewares/rate-limit.middleware";
 
 const router = Router();
 /**
@@ -40,6 +41,7 @@ const router = Router();
  */
 router.post(
   "/complete",
+  writeLimiter,
   authenticate,
   onboardingController.complete
 );
