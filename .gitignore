@@ -8,9 +8,6 @@ build/
 # enviromemnt
 .env
 
-# logs
-log
-*.log
 
 #os
 .DS_Store
@@ -19,5 +16,3 @@ Thumbs.db
 /generated/prisma
 
 /generated/prisma
-
-logs/*.log

@@ -5,8 +5,8 @@ import prisma from "#utils/prisma";
 const mentorPassword =
   process.env.MENTOR_PASSWORD || "mentor12345";
 
-const mentorName = "Mentor Backend";
-const mentorEmail = "mentor@example.com";
+const mentorName = process.env.MENTOR_NAME ||"Mentor Backend";
+const mentorEmail = process.env.MENTOR_EMAIL || "mentor@example.com";
 
 export async function seedMentor() {
   const hashedPassword = await bcrypt.hash(
