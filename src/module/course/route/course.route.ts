@@ -13,11 +13,16 @@ import {
   getCourseByIdValidation,
   listCoursesValidation,
   updateCourseValidation,
-  getCourseModulesValidation
+  getCourseModulesValidation,
 } from "#module/course/validation/course.validation";
 import { requireRole } from "#middlewares/require-role.middleware";
 import { getCourseModules } from "../controller/course-module.controller.js";
 import { upload } from "#middlewares/upload.middleware";
+import {
+  readLimiter,
+  writeLimiter,
+  uploadLimiter,
+} from "#middlewares/rate-limit.middleware";
 
 const router = Router();
 
@@ -82,8 +87,7 @@ const router = Router();
  *       200:
  *         description: Daftar course berhasil diambil.
  */
-router.get("/", listCoursesValidation, getAllCourses);
-
+router.get("/", readLimiter, listCoursesValidation, getAllCourses);
 /**
  * @openapi
  * /api/courses/{courseId}/modules:
@@ -155,6 +159,7 @@ router.get("/", listCoursesValidation, getAllCourses);
  */
 router.get(
   "/:courseId/modules",
+  readLimiter,
   authenticate,
   getCourseModulesValidation,
   getCourseModules
@@ -177,7 +182,7 @@ router.get(
  *       200:
  *         description: Detail course berhasil diambil.
  */
-router.get("/:id", getCourseByIdValidation, getCourseById);
+router.get("/:id", readLimiter, getCourseByIdValidation, getCourseById);
 
 /**
  * @openapi
@@ -238,6 +243,7 @@ router.get("/:id", getCourseByIdValidation, getCourseById);
  */
 router.post(
   "/",
+  uploadLimiter,
   authenticate,
   requireRole("MENTOR"),
   upload.single("thumbnail"),
@@ -305,6 +311,7 @@ router.post(
  */
 router.put(
   "/:id",
+  uploadLimiter,
   authenticate,
   requireRole("MENTOR"),
   upload.single("thumbnail"),
@@ -334,6 +341,7 @@ router.put(
  */
 router.delete(
   "/:id",
+  writeLimiter,
   authenticate,
   requireRole("MENTOR"),
   deleteCourseValidation,

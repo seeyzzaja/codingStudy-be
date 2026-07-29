@@ -8,6 +8,7 @@ import {
 import { authenticate } from "#middlewares/auth.middlewares";
 import { requireRole } from "#middlewares/require-role.middleware";
 import { Router } from "express";
+import { readLimiter, writeLimiter } from "#middlewares/rate-limit.middleware";
 
 const router = Router();
 
@@ -28,8 +29,7 @@ const router = Router();
  *       403:
  *         description: Forbidden.
  */
-router.get("/", authenticate, requireRole("ADMIN"), index);
-
+router.get("/", readLimiter, authenticate, requireRole("ADMIN"), index);
 /**
  * @openapi
  * /api/users/{id}:
@@ -55,7 +55,7 @@ router.get("/", authenticate, requireRole("ADMIN"), index);
  *       404:
  *         description: User tidak ditemukan.
  */
-router.get("/:id", authenticate, requireRole("ADMIN"), show);
+router.get("/:id", readLimiter, authenticate, requireRole("ADMIN"), show);
 
 /**
  * @openapi
@@ -99,7 +99,7 @@ router.get("/:id", authenticate, requireRole("ADMIN"), show);
  *       403:
  *         description: Forbidden.
  */
-router.post("/", authenticate, requireRole("ADMIN"), store);
+router.post("/", writeLimiter, authenticate, requireRole("ADMIN"), store);
 
 /**
  * @openapi
@@ -146,7 +146,7 @@ router.post("/", authenticate, requireRole("ADMIN"), store);
  *       404:
  *         description: User tidak ditemukan.
  */
-router.put("/:id", authenticate, requireRole("ADMIN"), update);
+router.put("/:id", writeLimiter, authenticate, requireRole("ADMIN"), update);
 
 /**
  * @openapi
@@ -173,6 +173,12 @@ router.put("/:id", authenticate, requireRole("ADMIN"), update);
  *       404:
  *         description: User tidak ditemukan.
  */
-router.delete("/:id", authenticate, requireRole("ADMIN"), destroy);
+router.delete(
+  "/:id",
+  writeLimiter,
+  authenticate,
+  requireRole("ADMIN"),
+  destroy
+);
 
 export default router;

@@ -9,6 +9,11 @@ import {
   verifyForgotPasswordSchema,
   resetPasswordSchema,
 } from "#module/auth/validation/auth.validation";
+import {
+  forgotPasswordLimiter,
+  verifyForgotPasswordLimiter,
+  resetPasswordLimiter,
+} from "#middlewares/rate-limit.middleware";
 
 const router = Router();
 
@@ -54,6 +59,7 @@ const router = Router();
  */
 router.post(
   "/forgot-password",
+  forgotPasswordLimiter,
   validateZod(forgotPasswordSchema),
   ForgotPasswordController.forgotPassword
 );
@@ -106,6 +112,7 @@ router.post(
  */
 router.post(
   "/verify-forgot-password",
+  verifyForgotPasswordLimiter,
   validateZod(verifyForgotPasswordSchema),
   ForgotPasswordController.verifyForgotPassword
 );
@@ -162,6 +169,7 @@ router.post(
  */
 router.post(
   "/reset-password",
+  resetPasswordLimiter,
   validateZod(resetPasswordSchema),
   ForgotPasswordController.resetPassword
 );

@@ -16,6 +16,7 @@ import {
   update,
   remove,
 } from "../controller/category.controller.js";
+import { readLimiter, writeLimiter } from "#middlewares/rate-limit.middleware";
 
 const router = Router();
 
@@ -66,6 +67,7 @@ const router = Router();
  */
 router.post(
   "/",
+  writeLimiter,
   createCategoryValidation,
   validateRequest,
   create
@@ -117,12 +119,7 @@ router.post(
  *       400:
  *         description: Query parameter tidak valid
  */
-router.get(
-  "/",
-  listCategoriesValidation,
-  validateRequest,
-  getAll
-);
+router.get("/", readLimiter, listCategoriesValidation, validateRequest, getAll);
 
 /**
  * @swagger
@@ -157,6 +154,7 @@ router.get(
  */
 router.get(
   "/:id",
+  readLimiter,
   getCategoryByIdValidation,
   validateRequest,
   getById
@@ -210,6 +208,7 @@ router.get(
  */
 router.patch(
   "/:id",
+  writeLimiter,
   updateCategoryValidation,
   validateRequest,
   update
@@ -248,6 +247,7 @@ router.patch(
  */
 router.delete(
   "/:id",
+  writeLimiter,
   deleteCategoryValidation,
   validateRequest,
   remove
