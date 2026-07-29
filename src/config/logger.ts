@@ -9,7 +9,9 @@ const logDir =
   process.env.LOG_DIR ??
   (process.env.NODE_ENV === "production" ? "/tmp/logs" : "logs");
 
-if (!fs.existsSync(logDir)) {
+const isLocalRuntime = !process.env.VERCEL && process.env.NODE_ENV !== "production";
+
+if (isLocalRuntime && !fs.existsSync(logDir)) {
   fs.mkdirSync(logDir, { recursive: true });
 }
 
@@ -33,24 +35,28 @@ const logger = winston.createLogger({
               consoleFormat
             ),
     }),
-
-    new winston.transports.File({
-      filename: path.join(logDir, "error.log"),
-      level: "error",
-      format: combine(timestamp(), errors({ stack: true }), json()),
-    }),
-
-    new winston.transports.File({
-      filename: path.join(logDir, "combined.log"),
-      format: combine(timestamp(), errors({ stack: true }), json()),
-    }),
+    ...(isLocalRuntime
+      ? [
+          new winston.transports.File({
+            filename: path.join(logDir, "error.log"),
+            level: "error",
+            format: combine(timestamp(), errors({ stack: true }), json()),
+          }),
+          new winston.transports.File({
+            filename: path.join(logDir, "combined.log"),
+            format: combine(timestamp(), errors({ stack: true }), json()),
+          }),
+        ]
+      : []),
   ],
 
-  exceptionHandlers: [
-    new winston.transports.File({
-      filename: path.join(logDir, "exceptions.log"),
-    }),
-  ],
+  exceptionHandlers: isLocalRuntime
+    ? [
+        new winston.transports.File({
+          filename: path.join(logDir, "exceptions.log"),
+        }),
+      ]
+    : [],
 });
 
 export default logger;
