@@ -11,14 +11,12 @@ import {
   Section,
   Text,
 } from "@react-email/components";
+import { logoCsDataUri } from "../logo-cs.js";
 
 type RegisterOtpEmailProps = {
   name: string;
   otp: string;
 };
-
-const logoUrl =
-  "data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22128%22%20height%3D%22128%22%20viewBox%3D%220%200%20128%20128%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22bg%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%233b82f6%22/%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%231d4ed8%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle%20cx%3D%2264%22%20cy%3D%2264%22%20r%3D%2260%22%20fill%3D%22url(%23bg)%22/%3E%3Ctext%20x%3D%2264%22%20y%3D%2276%22%20text-anchor%3D%22middle%22%20font-size%3D%2246%22%20font-family%3D%22Arial%22%20font-weight%3D%22700%22%20fill%3D%22white%22%3ECS%3C/text%3E%3C/svg%3E";
 
 export default function RegisterOtpEmail({
   name,
@@ -61,14 +59,15 @@ export default function RegisterOtpEmail({
             }}
           >
             <Img
-              src={logoUrl}
+              src={logoCsDataUri}
               alt="Coding Study"
-              width="90"
-              height="90"
+              width="300"
+              height="100"
               style={{
                 display: "block",
                 margin: "0 auto",
-                borderRadius: "50%",
+                width: "300px",
+                height: "100px",
                 objectFit: "cover",
               }}
             />
