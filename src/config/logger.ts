@@ -1,7 +1,17 @@
 import winston from "winston";
+import fs from "node:fs";
+import path from "node:path";
 
 const { combine, timestamp, printf, colorize, errors, json } =
   winston.format;
+
+const logDir =
+  process.env.LOG_DIR ??
+  (process.env.NODE_ENV === "production" ? "/tmp/logs" : "logs");
+
+if (!fs.existsSync(logDir)) {
+  fs.mkdirSync(logDir, { recursive: true });
+}
 
 const consoleFormat = printf(({ level, message, timestamp }) => {
   return `[${timestamp}] ${level}: ${message}`;
@@ -25,20 +35,20 @@ const logger = winston.createLogger({
     }),
 
     new winston.transports.File({
-      filename: "logs/error.log",
+      filename: path.join(logDir, "error.log"),
       level: "error",
       format: combine(timestamp(), errors({ stack: true }), json()),
     }),
 
     new winston.transports.File({
-      filename: "logs/combined.log",
+      filename: path.join(logDir, "combined.log"),
       format: combine(timestamp(), errors({ stack: true }), json()),
     }),
   ],
 
   exceptionHandlers: [
     new winston.transports.File({
-      filename: "logs/exceptions.log",
+      filename: path.join(logDir, "exceptions.log"),
     }),
   ],
 });
