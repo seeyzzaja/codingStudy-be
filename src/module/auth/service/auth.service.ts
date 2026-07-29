@@ -8,6 +8,7 @@ import { generateRefreshToken } from "#utils/token";
 import * as otpService from "#module/email/otp.service";
 import { sendEmail } from "#module/email/email.service";
 import { renderRegisterOtpEmail } from "#module/email/email.template";
+import logger from "#config/logger";
 
 import type {
   LoginInput,
@@ -79,7 +80,12 @@ export const register = async (data: RegisterInput) => {
     },
   });
 
+  // Email sudah terdaftar
   if (existingUser) {
+    logger.warn("Registrasi gagal - Email sudah terdaftar", {
+      email: data.email,
+    });
+
     throw new AppError("Email sudah terdaftar", 409);
   }
 
@@ -92,11 +98,14 @@ export const register = async (data: RegisterInput) => {
   });
 
   if (!studentRole) {
+    logger.error("Registrasi gagal - Role STUDENT tidak ditemukan");
+
     throw new AppError(
       "Role STUDENT tidak ditemukan. Jalankan seedRole terlebih dahulu.",
       500
     );
   }
+
   const user = await prisma.user.create({
     data: {
       name: data.name,
@@ -110,6 +119,11 @@ export const register = async (data: RegisterInput) => {
     },
   });
 
+  logger.info("User berhasil registrasi", {
+    userId: user.id,
+    email: user.email,
+  });
+
   const otp = await otpService.createOtp(user.id);
 
   try {
@@ -120,8 +134,17 @@ export const register = async (data: RegisterInput) => {
       subject: "Kode OTP Registrasi",
       html,
     });
+
+    logger.info("OTP registrasi berhasil dikirim", {
+      userId: user.id,
+      email: user.email,
+    });
   } catch (error) {
-    console.error("Brevo Error:", error);
+    logger.error("Gagal mengirim OTP registrasi", {
+      userId: user.id,
+      email: user.email,
+      error: error instanceof Error ? error.message : error,
+    });
 
     await prisma.user.update({
       where: {
@@ -131,6 +154,7 @@ export const register = async (data: RegisterInput) => {
         deletedAt: new Date(),
       },
     });
+
     throw new AppError("Gagal mengirim email OTP", 500);
   }
 
@@ -145,16 +169,29 @@ export const verifyOtp = async (data: VerifyOtpInput) => {
     },
   });
 
+  // User tidak ditemukan
   if (!user) {
+    logger.warn("Verifikasi OTP gagal - User tidak ditemukan", {
+      email: data.email,
+    });
+
     throw new AppError("User tidak ditemukan", 404);
   }
 
+  // Email sudah diverifikasi
   if (user.isVerified) {
+    logger.warn("Verifikasi OTP gagal - Email sudah diverifikasi", {
+      userId: user.id,
+      email: user.email,
+    });
+
     throw new AppError("Email sudah diverifikasi", 400);
   }
 
+  // Verifikasi OTP
   await otpService.verifyOtp(user.id, data.otp);
 
+  // Update status user
   await prisma.user.update({
     where: {
       id: user.id,
@@ -164,7 +201,14 @@ export const verifyOtp = async (data: VerifyOtpInput) => {
     },
   });
 
+  // Hapus OTP
   await otpService.deleteOtp(user.id);
+
+  // Berhasil
+  logger.info("Email berhasil diverifikasi", {
+    userId: user.id,
+    email: user.email,
+  });
 
   return {
     message: "Email berhasil diverifikasi",
@@ -187,17 +231,34 @@ export const login = async (data: LoginInput) => {
     },
   });
 
+  // Email tidak ditemukan
   if (!user) {
+    logger.warn("Login gagal - Email tidak ditemukan", {
+      email: data.email,
+    });
+
     throw new AppError("Email atau password salah", 401);
   }
 
   const isPasswordValid = await bcrypt.compare(data.password, user.password);
 
+  // Password salah
   if (!isPasswordValid) {
+    logger.warn("Login gagal - Password salah", {
+      userId: user.id,
+      email: user.email,
+    });
+
     throw new AppError("Email atau password salah", 401);
   }
 
+  // Email belum diverifikasi
   if (!user.isVerified) {
+    logger.warn("Login gagal - Email belum diverifikasi", {
+      userId: user.id,
+      email: user.email,
+    });
+
     throw new AppError("Silakan verifikasi email terlebih dahulu.", 403);
   }
 
@@ -205,6 +266,7 @@ export const login = async (data: LoginInput) => {
     id: user.id,
     role: user.role.name,
   });
+
   const refreshToken = generateRefreshToken();
 
   const tokenHash = await hashToken(refreshToken);
@@ -216,32 +278,52 @@ export const login = async (data: LoginInput) => {
     },
   });
 
+  // Login berhasil
+  logger.info("User login berhasil", {
+    userId: user.id,
+    email: user.email,
+    role: user.role.name,
+  });
+
   return {
     user: sanitizeUser(user),
     accessToken,
     refreshToken,
   };
 };
-
 export const refreshToken = async (token: string) => {
   if (!token || typeof token !== "string") {
+    logger.warn("Refresh token gagal - Token tidak diberikan");
+
     throw new AppError("Refresh token wajib diisi", 400);
   }
 
   const normalizedToken = token.trim();
 
   if (!normalizedToken) {
+    logger.warn("Refresh token gagal - Token kosong");
+
     throw new AppError("Refresh token wajib diisi", 400);
   }
 
   const session = await findActiveSessionByToken(normalizedToken);
 
   if (!session || session.user.deletedAt) {
+    logger.warn("Refresh token gagal - Token tidak valid", {
+      token: normalizedToken.substring(0, 10) + "...",
+    });
+
     throw new AppError("Refresh token tidak valid", 401);
   }
 
   const newAccessToken = generateAccessToken({
     id: session.user.id,
+    role: session.user.role.name,
+  });
+
+  logger.info("Refresh token berhasil", {
+    userId: session.user.id,
+    email: session.user.email,
     role: session.user.role.name,
   });
 
@@ -255,10 +337,19 @@ export const logout = async (userId: number, refreshToken?: string) => {
     const session = await findActiveSessionByToken(refreshToken.trim());
 
     if (!session) {
+      logger.warn("Logout gagal - Refresh token tidak valid", {
+        userId,
+      });
+
       throw new AppError("Refresh token tidak valid", 401);
     }
 
     if (session.userId !== userId) {
+      logger.warn("Logout gagal - Refresh token tidak sesuai dengan user", {
+        userId,
+        sessionUserId: session.userId,
+      });
+
       throw new AppError("Refresh token tidak sesuai dengan user", 403);
     }
 
@@ -270,6 +361,10 @@ export const logout = async (userId: number, refreshToken?: string) => {
         revoked: true,
         deletedAt: new Date(),
       },
+    });
+
+    logger.info("Logout berhasil", {
+      userId,
     });
 
     return {
@@ -287,6 +382,10 @@ export const logout = async (userId: number, refreshToken?: string) => {
       revoked: true,
       deletedAt: new Date(),
     },
+  });
+
+  logger.info("Logout dari semua perangkat berhasil", {
+    userId,
   });
 
   return {

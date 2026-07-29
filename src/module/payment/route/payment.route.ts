@@ -7,14 +7,17 @@ import {
   paymentDetail,
 } from "../controller/payment.controller.js";
 import {
- checkoutValidation,
+  checkoutValidation,
   paymentHistoryValidation,
   paymentDetailValidation,
 } from "#module/payment/validation/payment.validation";
 import { validateRequest } from "#middlewares/validate-request.middleware";
+import {
+  paymentLimiter,
+  readLimiter,
+} from "#middlewares/rate-limit.middleware";
+
 const router = Router();
-
-
 
 /**
  * @openapi
@@ -43,6 +46,7 @@ const router = Router();
  */
 router.post(
   "/checkout",
+  paymentLimiter,
   authenticate,
   checkoutValidation,
   checkout
@@ -77,36 +81,6 @@ router.post(
  *         description: Webhook berhasil diproses
  */
 router.post("/webhook", webhook);
-
-/**
- * @openapi
- * /api/payments/{paymentId}:
- *   get:
- *     tags:
- *       - Payment
- *     summary: Detail pembayaran
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: paymentId
- *         required: true
- *         schema:
- *           type: string
- *           format: uuid
- *     responses:
- *       200:
- *         description: Berhasil mengambil detail pembayaran
- *       404:
- *         description: Payment tidak ditemukan
- */
-router.get(
-  "/:paymentId",
-  authenticate,
-  paymentDetailValidation,
-  validateRequest,
-  paymentDetail
-);
 
 /**
  * @openapi
@@ -216,10 +190,44 @@ router.get(
  */
 router.get(
   "/history",
+  readLimiter,
   authenticate,
   paymentHistoryValidation,
   validateRequest,
   history
 );
+
+
+/**
+ * @openapi
+ * /api/payments/{paymentId}:
+ *   get:
+ *     tags:
+ *       - Payment
+ *     summary: Detail pembayaran
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: paymentId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Berhasil mengambil detail pembayaran
+ *       404:
+ *         description: Payment tidak ditemukan
+ */
+router.get(
+  "/:paymentId",
+  readLimiter,
+  authenticate,
+  paymentDetailValidation,
+  validateRequest,
+  paymentDetail
+);
+
 
 export default router;

@@ -1,5 +1,6 @@
 import prisma from "#prisma";
 import { AppError } from "#utils/app-error";
+import logger from "#config/logger";
 
 interface CreateReviewPayload {
   classId: string;
@@ -7,15 +8,18 @@ interface CreateReviewPayload {
   rating: number;
   comment?: string;
 }
+
 interface GetReviewsPayload {
   classId: string;
 }
+
 interface UpdateReviewPayload {
   reviewId: string;
   studentId: number;
   rating?: number;
   comment?: string;
 }
+
 interface DeleteReviewPayload {
   reviewId: string;
   studentId: number;
@@ -27,7 +31,6 @@ export const createReview = async ({
   rating,
   comment,
 }: CreateReviewPayload) => {
-  // Cek apakah course ada
   const course = await prisma.class.findUnique({
     where: {
       id: classId,
@@ -36,6 +39,11 @@ export const createReview = async ({
   });
 
   if (!course) {
+    logger.warn("Gagal membuat review - Course tidak ditemukan", {
+      classId,
+      studentId,
+    });
+
     throw new AppError("Course tidak ditemukan", 404);
   }
 
@@ -50,10 +58,17 @@ export const createReview = async ({
   });
 
   if (!enrollment) {
-    throw new AppError("Anda harus membeli course ini terlebih dahulu", 403);
+    logger.warn("Gagal membuat review - User belum membeli course", {
+      classId,
+      studentId,
+    });
+
+    throw new AppError(
+      "Anda harus membeli course ini terlebih dahulu",
+      403
+    );
   }
 
-  // Simpan review
   const review = await prisma.review.create({
     data: {
       classId,
@@ -63,9 +78,19 @@ export const createReview = async ({
     },
   });
 
+  logger.info("Review berhasil dibuat", {
+    reviewId: review.id,
+    classId,
+    studentId,
+    rating,
+  });
+
   return review;
 };
-export const getReviews = async ({ classId }: GetReviewsPayload) => {
+
+export const getReviews = async ({
+  classId,
+}: GetReviewsPayload) => {
   const reviews = await prisma.review.findMany({
     where: {
       classId,
@@ -81,6 +106,11 @@ export const getReviews = async ({ classId }: GetReviewsPayload) => {
     orderBy: {
       createdAt: "desc",
     },
+  });
+
+  logger.info("Daftar review berhasil diambil", {
+    classId,
+    totalReviews: reviews.length,
   });
 
   return reviews;
@@ -99,10 +129,20 @@ export const updateReview = async ({
   });
 
   if (!review) {
+    logger.warn("Gagal mengupdate review - Review tidak ditemukan", {
+      reviewId,
+      studentId,
+    });
+
     throw new AppError("Review tidak ditemukan", 404);
   }
 
   if (review.studentId !== studentId) {
+    logger.warn("Gagal mengupdate review - Akses ditolak", {
+      reviewId,
+      studentId,
+    });
+
     throw new AppError(
       "Anda tidak memiliki akses",
       403
@@ -119,8 +159,14 @@ export const updateReview = async ({
     },
   });
 
+  logger.info("Review berhasil diperbarui", {
+    reviewId,
+    studentId,
+  });
+
   return updatedReview;
 };
+
 export const deleteReview = async ({
   reviewId,
   studentId,
@@ -132,16 +178,34 @@ export const deleteReview = async ({
   });
 
   if (!review) {
+    logger.warn("Gagal menghapus review - Review tidak ditemukan", {
+      reviewId,
+      studentId,
+    });
+
     throw new AppError("Review tidak ditemukan", 404);
   }
 
   if (review.studentId !== studentId) {
-    throw new AppError("Anda tidak memiliki akses", 403);
+    logger.warn("Gagal menghapus review - Akses ditolak", {
+      reviewId,
+      studentId,
+    });
+
+    throw new AppError(
+      "Anda tidak memiliki akses",
+      403
+    );
   }
 
   await prisma.review.delete({
     where: {
       id: reviewId,
     },
+  });
+
+  logger.info("Review berhasil dihapus", {
+    reviewId,
+    studentId,
   });
 };

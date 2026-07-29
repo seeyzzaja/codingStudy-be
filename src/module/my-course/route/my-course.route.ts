@@ -2,6 +2,7 @@ import { Router } from "express";
 
 import { authenticate } from "#middlewares/auth.middlewares";
 import { getMyCourses } from "#module/my-course/controller/my-course.controller";
+import { readLimiter } from "#middlewares/rate-limit.middleware";
 
 const router = Router();
 
@@ -21,6 +22,11 @@ const router = Router();
  *       401:
  *         description: Unauthorized.
  */
-router.get("/", authenticate, getMyCourses);
+router.get(
+  "/",
+  readLimiter,
+  authenticate,
+  getMyCourses
+);
 
 export default router;

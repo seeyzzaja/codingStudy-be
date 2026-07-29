@@ -1,3 +1,4 @@
+import logger from "#config/logger";
 import { onboardingRepository } from "../onboarding.repository.js";
 
 export const onboardingService = {
@@ -5,9 +6,12 @@ export const onboardingService = {
     userId: number,
     categoryIds: string[]
   ) {
-    await onboardingRepository.deletePreferences(
-      userId
-    );
+    logger.info("Memulai proses onboarding", {
+      userId,
+      totalCategories: categoryIds.length,
+    });
+
+    await onboardingRepository.deletePreferences(userId);
 
     await onboardingRepository.createPreferences(
       userId,
@@ -17,6 +21,11 @@ export const onboardingService = {
     await onboardingRepository.completeOnboarding(
       userId
     );
+
+    logger.info("Onboarding berhasil diselesaikan", {
+      userId,
+      totalCategories: categoryIds.length,
+    });
 
     return {
       message: "Onboarding completed",

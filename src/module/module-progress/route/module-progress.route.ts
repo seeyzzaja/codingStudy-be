@@ -1,8 +1,6 @@
 import { Router } from "express";
-
-import { authenticate } from "#middlewares/auth.middlewares";
+import { authenticate } from "#middlewares/auth.middlewares"
 import { validateRequest } from "#middlewares/validate-request.middleware";
-
 import {
   updateProgress,
   getProgressByClass,
@@ -11,6 +9,10 @@ import {
   updateProgressValidation,
   getModuleProgressValidation,
 } from "#module/module-progress/validation/module-progress.validation";
+import {
+  readLimiter,
+  writeLimiter,
+} from "#middlewares/rate-limit.middleware";
 
 const router = Router();
 
@@ -118,6 +120,7 @@ const router = Router();
  */
 router.patch(
   "/:moduleId",
+  writeLimiter,
   authenticate,
   updateProgressValidation,
   validateRequest,
@@ -260,6 +263,7 @@ router.patch(
  */
 router.get(
   "/class/:classId",
+  readLimiter,
   authenticate,
   getModuleProgressValidation,
   validateRequest,

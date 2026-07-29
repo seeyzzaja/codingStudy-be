@@ -1,4 +1,5 @@
 import { BrevoClient } from "@getbrevo/brevo";
+import logger from "#config/logger";
 
 if (!process.env.BREVO_API_KEY) {
   throw new Error("BREVO_API_KEY belum diatur");
@@ -32,10 +33,25 @@ export const sendEmail = async ({
   subject,
   html,
 }: SendEmailParams): Promise<void> => {
-  await brevo.transactionalEmails.sendTransacEmail({
-    sender,
-    to: [{ email: to }],
-    subject,
-    htmlContent: html,
-  });
+  try {
+    await brevo.transactionalEmails.sendTransacEmail({
+      sender,
+      to: [{ email: to }],
+      subject,
+      htmlContent: html,
+    });
+
+    logger.info("Email berhasil dikirim", {
+      to,
+      subject,
+    });
+  } catch (error) {
+    logger.error("Gagal mengirim email", {
+      to,
+      subject,
+      error: error instanceof Error ? error.message : error,
+    });
+
+    throw error;
+  }
 };

@@ -11,7 +11,7 @@ import type {
 import {
   renderForgotPasswordOtpEmail,
 } from "#module/email/email.template";
-
+import logger from "#config/logger";
 
 
 
@@ -25,7 +25,12 @@ export const forgotPassword = async (
     },
   });
 
+  // Email tidak ditemukan
   if (!user) {
+    logger.warn("Forgot password gagal - Email tidak ditemukan", {
+      email: data.email,
+    });
+
     throw new AppError(
       "Email tidak ditemukan",
       404
@@ -43,8 +48,18 @@ export const forgotPassword = async (
         otp
       ),
     });
+
+    logger.info("OTP reset password berhasil dikirim", {
+      userId: user.id,
+      email: user.email,
+    });
+
   } catch (error) {
-    console.error(error);
+    logger.error("Gagal mengirim email reset password", {
+      userId: user.id,
+      email: user.email,
+      error: error instanceof Error ? error.message : error,
+    });
 
     throw new AppError(
       "Gagal mengirim email",
@@ -53,8 +68,7 @@ export const forgotPassword = async (
   }
 
   return {
-    message:
-      "OTP berhasil dikirim ke email",
+    message: "OTP berhasil dikirim ke email",
   };
 };
 
@@ -68,7 +82,12 @@ export const verifyForgotPassword = async (
     },
   });
 
+  // User tidak ditemukan
   if (!user) {
+    logger.warn("Verifikasi OTP reset password gagal - User tidak ditemukan", {
+      email: data.email,
+    });
+
     throw new AppError(
       "User tidak ditemukan",
       404
@@ -80,9 +99,13 @@ export const verifyForgotPassword = async (
     data.otp
   );
 
+  logger.info("OTP reset password berhasil diverifikasi", {
+    userId: user.id,
+    email: user.email,
+  });
+
   return {
-    message:
-      "OTP berhasil diverifikasi",
+    message: "OTP berhasil diverifikasi",
   };
 };
 
@@ -97,15 +120,19 @@ export const resetPassword = async (
     },
   });
 
+  // User tidak ditemukan
   if (!user) {
+    logger.warn("Reset password gagal - User tidak ditemukan", {
+      email: data.email,
+    });
+
     throw new AppError(
       "User tidak ditemukan",
       404
     );
   }
 
-  const hashedPassword =
-    await bcrypt.hash(data.password, 10);
+  const hashedPassword = await bcrypt.hash(data.password, 10);
 
   await prisma.user.update({
     where: {
@@ -130,8 +157,12 @@ export const resetPassword = async (
     },
   });
 
+  logger.info("Password berhasil direset", {
+    userId: user.id,
+    email: user.email,
+  });
+
   return {
-    message:
-      "Password berhasil diubah",
+    message: "Password berhasil diubah",
   };
 };

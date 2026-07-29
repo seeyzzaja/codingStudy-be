@@ -1,5 +1,6 @@
 import prisma from "#prisma";
 import { AppError } from "#utils/app-error";
+import logger from "#config/logger";
 
 export const createCategory = async (data: any) => {
   const existingCategory = await prisma.category.findFirst({
@@ -13,12 +14,23 @@ export const createCategory = async (data: any) => {
   });
 
   if (existingCategory) {
+    logger.warn("Gagal membuat category - Category sudah ada", {
+      name: data.name,
+    });
+
     throw new AppError("Category sudah ada", 400);
   }
 
-  return prisma.category.create({
+  const category = await prisma.category.create({
     data,
   });
+
+  logger.info("Category berhasil dibuat", {
+    categoryId: category.id,
+    name: category.name,
+  });
+
+  return category;
 };
 
 export const getAllCategories = async (
@@ -71,6 +83,10 @@ export const updateCategory = async (
   });
 
   if (!existingCategory) {
+    logger.warn("Gagal mengupdate category - Category tidak ditemukan", {
+      categoryId: id,
+    });
+
     throw new AppError("Category tidak ditemukan", 404);
   }
 
@@ -89,16 +105,28 @@ export const updateCategory = async (
     });
 
     if (duplicate) {
+      logger.warn("Gagal mengupdate category - Nama sudah digunakan", {
+        categoryId: id,
+        name: data.name,
+      });
+
       throw new AppError("Nama category sudah digunakan", 400);
     }
   }
 
-  return prisma.category.update({
+  const category = await prisma.category.update({
     where: {
       id,
     },
     data,
   });
+
+  logger.info("Category berhasil diperbarui", {
+    categoryId: category.id,
+    name: category.name,
+  });
+
+  return category;
 };
 
 export const deleteCategory = async (id: string) => {
@@ -117,17 +145,25 @@ export const deleteCategory = async (id: string) => {
   });
 
   if (!existingCategory) {
+    logger.warn("Gagal menghapus category - Category tidak ditemukan", {
+      categoryId: id,
+    });
+
     throw new AppError("Category tidak ditemukan", 404);
   }
 
   if (existingCategory.classes.length > 0) {
+    logger.warn("Gagal menghapus category - Masih digunakan oleh class", {
+      categoryId: id,
+    });
+
     throw new AppError(
       "Category masih digunakan oleh class",
       400
     );
   }
 
-  return prisma.category.update({
+  const category = await prisma.category.update({
     where: {
       id,
     },
@@ -135,4 +171,11 @@ export const deleteCategory = async (id: string) => {
       deletedAt: new Date(),
     },
   });
+
+  logger.info("Category berhasil dihapus", {
+    categoryId: category.id,
+    name: category.name,
+  });
+
+  return category;
 };
